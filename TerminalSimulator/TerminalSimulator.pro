@@ -218,6 +218,7 @@ HEADERS += ../Agape/AssetLoaders/*.h \
            TerminalSimulator.h
 
 OBJECTS_DIR = build
+MOC_DIR = build
 
 QT += widgets websockets
 
