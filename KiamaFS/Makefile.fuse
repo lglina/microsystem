@@ -1,0 +1,7 @@
+all:
+	g++ -I../Agape -c ../Agape/Memories/FileMemory.cpp
+	g++ -I../Agape -c ../Agape/Memories/Memory.cpp
+	g++ -I../Agape -c ../Agape/ReadableWritable.cpp
+	g++ -I../Agape -c ../Agape/String.cpp
+	g++ -I../Agape -c KiamaFS.cpp
+	g++ -I../Agape -fpermissive -I/usr/include/fuse3 -o KiamaFS-fuse -D_FILE_OFFSET_BITS=64 FileMemory.o Memory.o ReadableWritable.o String.o KiamaFS.o KiamaFS-fuse.cpp -lfuse3

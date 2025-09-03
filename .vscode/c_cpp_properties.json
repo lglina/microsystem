@@ -1,0 +1,33 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "includePath": [
+                "${default}",
+                "Agape",
+                "ANSIEditor",
+                "Carlo",
+                "Client",
+                "Client/Estelle",
+                "Editor",
+                "KiamaFS",
+                "Linda2",
+                "Stratus",
+                "/opt/qt6/include",
+                "/opt/qt6/include/QtCore",
+                "/opt/qt6/include/QtGui",
+                "/opt/qt6/include/QtWebSockets",
+                "/opt/qt6/include/QtWidgets",
+                "/usr/local/include/mongocxx/v_noabi",
+                "/usr/local/include/bsoncxx/v_noabi",
+                "~/websocketpp-0.8.2",
+                "~/cpr-1.10.5/include"
+            ]
+        }
+    ],
+    "version": 4
+}

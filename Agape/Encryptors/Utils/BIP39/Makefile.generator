@@ -1,0 +1,2 @@
+all:
+	g++ -g -o MnemonicWordListGenerator -DBIP39_GENERATOR -I ../../.. MnemonicWordListGenerator.cpp ../../../Loggers/Logger.cpp ../../../String.cpp ../../../Utils/StrToHex.cpp TextSquasher.cpp

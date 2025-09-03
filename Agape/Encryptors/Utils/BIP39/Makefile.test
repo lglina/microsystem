@@ -1,0 +1,33 @@
+VPATH=../../..
+CXXFLAGS=-I../../../ -I../../SHA256 -g -DBIP39_TEST -Wnarrowing
+
+SOURCES=Encryptors/SHA256/SHA256Hash.cpp \
+        Loggers/Logger.cpp \
+        Utils/StrToHex.cpp \
+        Mnemonic.cpp \
+        MnemonicTest.cpp \
+        String.cpp \
+        TextSquasher.cpp
+
+CSOURCES=Encryptors/SHA256/sha256.c
+
+OBJECTS:=${SOURCES:.cpp=.o} ${CSOURCES:.c=.o}
+
+EXECUTABLE=MnemonicTest
+
+all: $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+%.o: %.c
+	@mkdir -p $(@D)
+	$(CC) $(CXXFLAGS) -c -o $@ $<
+
+.PHONY: clean
+clean:
+	rm -rf $(EXECUTABLE) $(OBJECTS)
