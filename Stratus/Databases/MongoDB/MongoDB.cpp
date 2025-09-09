@@ -31,6 +31,8 @@ mongocxx::instance& MongoDB::instance()
 
 mongocxx::pool& MongoDB::pool()
 {
+    MongoDB::instance(); // Ensure an instance is created.
+
     if( !s_pool )
     {
         std::string mongoURI;
