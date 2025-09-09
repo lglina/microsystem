@@ -16,6 +16,7 @@ TerminalSimulator/kiamafs.dat
 TerminalSimulator/Makefile
 TerminalSimulator/telegrams.dat
 TerminalSimulator/TerminalSimulator
+TerminalSimulator/snap-*.png
 .qmake.stash
 *.d
 *.o
