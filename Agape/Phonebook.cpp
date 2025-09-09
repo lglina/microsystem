@@ -22,6 +22,7 @@ void Phonebook::add( const String& name, const String& number, bool setDefault )
     entry[_number] = number;
     // FIXME: Should this be hard-coded, or a user option?
     entry[_authenticate] = ( ( number.find( "glina.com.au" ) != String::npos ) ||
+                             ( number.find( "localhost" ) != String::npos ) ||
                              ( number.find( "127.0.0.1" ) != String::npos ) )
                            ? 1 : 0;
     phonebook[name] = entry;
