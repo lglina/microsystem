@@ -13,8 +13,13 @@ namespace Agape
 namespace AssetLoaders
 {
 
-KiamaFS::KiamaFS( const World::Coordinates& coordinates, const String& name, Agape::KiamaFS& fs, Map< String, int >& index ) :
+KiamaFS::KiamaFS( const World::Coordinates& coordinates,
+                  const String& name,
+                  const String& extension,
+                  Agape::KiamaFS& fs,
+                  Map< String, int >& index ) :
   AssetLoader( coordinates, name ),
+  m_extension( extension ),
   m_fs( fs ),
   m_index( index ),
   m_file( nullptr ),
@@ -33,7 +38,7 @@ KiamaFS::~KiamaFS()
 bool KiamaFS::open()
 {
     LiteStream filenameStream;
-    filenameStream << m_name << ".ans";
+    filenameStream << m_name << "." << m_extension;
 
     LOG_DEBUG( "Attempting to load " + filenameStream.str() + " with KiamaFS" );
 

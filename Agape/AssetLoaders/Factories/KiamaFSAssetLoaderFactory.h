@@ -25,12 +25,13 @@ namespace Factories
 class KiamaFS : public Factory
 {
 public:
-    KiamaFS( Agape::KiamaFS& fs );
+    KiamaFS( Agape::KiamaFS& fs, const String& extension );
 
     virtual AssetLoader* makeLoader( const World::Coordinates& coordinates, const String& name );
 
 private:
     Agape::KiamaFS& m_fs;
+    String m_extension;
     Map< String, int > m_index;
 };
 

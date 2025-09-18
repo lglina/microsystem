@@ -20,7 +20,11 @@ namespace AssetLoaders
 class KiamaFS : public AssetLoader
 {
 public:
-    KiamaFS( const World::Coordinates& coordinates, const String& name, Agape::KiamaFS& fs, Map< String, int>& index );
+    KiamaFS( const World::Coordinates& coordinates,
+             const String& name,
+             const String& extension,
+             Agape::KiamaFS& fs,
+             Map< String, int>& index );
     ~KiamaFS();
 
     virtual bool open();
@@ -28,6 +32,7 @@ public:
     virtual int size();
 
 private:
+    String m_extension;
     Agape::KiamaFS& m_fs;
     Map< String, int > m_index;
     

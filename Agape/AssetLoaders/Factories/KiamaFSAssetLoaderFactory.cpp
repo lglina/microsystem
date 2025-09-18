@@ -15,18 +15,19 @@ namespace AssetLoaders
 namespace Factories
 {
 
-KiamaFS::KiamaFS( Agape::KiamaFS& fs ) :
-  m_fs( fs )
+KiamaFS::KiamaFS( Agape::KiamaFS& fs, const String& extension ) :
+  m_fs( fs ),
+  m_extension( extension )
 {
     //m_fs.getIndex( m_index );
 }
 
 AssetLoader* KiamaFS::makeLoader( const World::Coordinates& coordinates, const String& name )
 {
-	LOG_DEBUG( "Creating KiamaFS loader for " + name );
-    // FIXME: For testing, re-scan for new asset files every time.
-    //m_fs.getIndex( m_index );
-    return new AssetLoaders::KiamaFS( coordinates, name, m_fs, m_index );
+	LOG_DEBUG( "Creating KiamaFS loader for " + name + "." + m_extension );
+  // FIXME: For testing, re-scan for new asset files every time.
+  //m_fs.getIndex( m_index );
+  return new AssetLoaders::KiamaFS( coordinates, name, m_extension, m_fs, m_index );
 }
 
 } // namespace Factories
