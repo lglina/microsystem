@@ -26,7 +26,7 @@ KiamaFS::KiamaFS( const World::Coordinates& coordinates, Agape::KiamaFS& fs, Map
 {
 }
 
-void KiamaFS::load( World::Scene& scene )
+bool KiamaFS::load( World::Scene& scene )
 {
     scene.m_sceneItems.clear();
 
@@ -62,10 +62,15 @@ void KiamaFS::load( World::Scene& scene )
     Agape::KiamaFS::File* file( m_fs.file( filenameStream.str() ) );
     if( file->open( Agape::KiamaFS::File::OpenMode::readMode ) )
     {
-        Value sceneValue( Value::fromReadableWritable( *file ) );
+        Value sceneValue;
+        Value::fromReadableWritable( *file, sceneValue );
         //LOG_DEBUG( sceneValue.dump() );
         scene = Scene::fromValue( sceneValue );
+
+        return true;
     }
+
+    return false;
 }
 
 bool KiamaFS::request( const Vector< SceneRequest >& requests )

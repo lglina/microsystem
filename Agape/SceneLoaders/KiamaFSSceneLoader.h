@@ -23,7 +23,7 @@ class KiamaFS : public SceneLoader
 public:
     KiamaFS( const World::Coordinates& coordinates, Agape::KiamaFS& fs, Map< String, int>& index );
 
-    virtual void load( World::Scene& scene );
+    virtual bool load( World::Scene& scene );
     virtual bool request( const Vector< SceneRequest >& requests );
     virtual Vector< SceneRequest > getUpdates();
 

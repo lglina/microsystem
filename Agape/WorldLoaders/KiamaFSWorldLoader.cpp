@@ -47,7 +47,8 @@ bool KiamaFS::load( World::Metadata& metadata, String& reason )
     Agape::KiamaFS::File* file( m_fs.file( filenameStream.str() ) );
     if( file->open( Agape::KiamaFS::File::OpenMode::readMode ) )
     {
-        Value worldValue( Value::fromReadableWritable( *file ) );
+        Value worldValue;
+        Value::fromReadableWritable( *file, worldValue );
         metadata = World::Metadata::fromValue( worldValue );
         return true;
     }
