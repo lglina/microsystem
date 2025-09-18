@@ -3,7 +3,7 @@ ANSI_EDITOR_DIR=$(abspath ../ANSIEditor)
 CARLO_DIR=$(abspath ../Carlo)
 EDITOR_DIR=$(abspath ../Editor)
 ESTELLE_DIR=$(abspath Estelle)
-KIAMA_DIR=$(abspath ../kiamafs)
+KIAMA_DIR=$(abspath ../KiamaFS)
 LINDA2_DIR=$(abspath ../Linda2)
 VPATH=$(AGAPE_DIR) $(ANSI_EDITOR_DIR) $(CARLO_DIR) $(EDITOR_DIR) $(KIAMA_DIR) $(LINDA2_DIR)
 XC32BIN=/opt/microchip/xc32/v4.45/bin
@@ -11,14 +11,14 @@ DEFINES=-DLOG_TUPLES_BRIEF
 #DEFINES=-DKIAMA_DEBUG -DLOG_LOADERS
 
 CXX=$(XC32BIN)/xc32-g++
-CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps -O0 -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
+CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps=obj -O0 -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MX470F512H -mmalloc-variant=binned -mips16 -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=110000,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MX470F512H -mips16 -g -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=100000,--defsym=_DEBUGGER=1,--report-mem -fno-common -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CXXFLAGS=-mprocessor=32MX170F256B -mips16 -I. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=32768,--report-mem -ffunction-sections -fdata-sections -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 
 CC=$(XC32BIN)/xc32-gcc
-CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps -O0 -Wl,-Map,mapfile.map -fno-exceptions
+CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps=obj -O0 -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MX470F512H -mmalloc-variant=binned -mips16 -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=110000,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MX470F512H -mips16 -g -std=c99 -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=100000,--defsym=_DEBUGGER=1,--report-mem -fno-common -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
@@ -26,50 +26,27 @@ CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES)
 
 BIN2HEX=$(XC32BIN)/xc32-bin2hex
 
-#AssetLoaders/Factories/KiamaFSAssetLoaderFactory.cpp \
-#AssetLoaders/KiamaFSAssetLoader.cpp \
-#InputDevices/NullInputDevice.cpp \
-
-#PresenceLoaders/Factories/DemoPresenceLoaderFactory.cpp \
-#PresenceLoaders/DemoPresenceLoader.cpp \
-
-#ProgramLoaders/Factories/NullProgramLoaderFactory.cpp \
-#ProgramLoaders/NullProgramLoader.cpp \
-#SceneLoaders/Factories/KiamaFSSceneLoaderFactory.cpp \
-#SceneLoaders/KiamaFSSceneLoader.cpp \
-
-
-#WorldLoaders/Factories/KiamaFSWorldLoaderFactory.cpp \
-#WorldLoaders/KiamaFSWorldLoader.cpp \
-
 SOURCES=Actors/Linda2Actor.cpp \
         Actors/NativeActors/NativeActor.cpp \
 		AssetLoaders/Caches/KiamaFSAssetCache.cpp \
-		AssetLoaders/Caches/RAMAssetCache.cpp \
         AssetLoaders/Factories/BakedAssetLoaderFactory.cpp \
 		AssetLoaders/Factories/CacheAssetLoaderFactory.cpp \
-		AssetLoaders/Factories/DemoAssetLoaderFactory.cpp \
 		AssetLoaders/Factories/EncryptedAssetLoaderFactory.cpp \
 		AssetLoaders/Factories/Linda2AssetLoaderFactory.cpp \
 		AssetLoaders/Factories/MiniMapAssetLoaderFactory.cpp \
-		AssetLoaders/Factories/RAMAssetLoaderFactory.cpp \
 		AssetLoaders/AssetLoader.cpp \
 		AssetLoaders/BakedAssetLoader.cpp \
 		AssetLoaders/CacheAssetLoader.cpp \
-		AssetLoaders/DemoAssetLoader.cpp \
 		AssetLoaders/EncryptedAssetLoader.cpp \
 		AssetLoaders/Linda2AssetLoader.cpp \
 		AssetLoaders/MiniMapAssetLoader.cpp \
-		AssetLoaders/RAMAssetLoader.cpp \
 		Assets/ANSIFile.cpp \
 		Assets/Asset.cpp \
 		Assets/SAUCE.cpp \
-		Audio/MIDIPlayers/NullMIDIPlayer.cpp \
 		Audio/MIDIPlayers/SAM2695MIDIPlayer.cpp \
 		Audio/FrobMIDIPlayer.cpp \
 		Audio/MIDIPlayer.cpp \
 		Clocks/Clock.cpp \
-		Clocks/DummyClock.cpp \
 		Clocks/VRTimeClock.cpp \
 		Encryptors/Factories/AESBlockEncryptorFactory.cpp \
 		Encryptors/Factories/AESEncryptorFactory.cpp \
@@ -81,21 +58,18 @@ SOURCES=Actors/Linda2Actor.cpp \
 		Encryptors/Utils/BIP39/Mnemonic.cpp \
 		Encryptors/Utils/BIP39/TextSquasher.cpp \
 		Encryptors/Utils/SecureIdentifier.cpp \
-		EntropySources/DummyEntropySource.cpp \
 		EntropySources/SPIEntropySource.cpp \
 		Expressions/ArithmeticExpression.cpp \
 		Expressions/ComparisonExpression.cpp \
 		Expressions/FunctionExpression.cpp \
 		Expressions/IdentifierExpression.cpp \
 		Expressions/LogicalExpression.cpp \
-		EventClocks/DummyEventClock.cpp \
+		EventClocks/NullEventClock.cpp \
 		GraphicsDrivers/GraphicsDriver.cpp \
 		GraphicsDrivers/Headless.cpp \
 		GraphicsDrivers/RA8873.cpp \
-		GraphicsDrivers/RA8875.cpp \
 		Highlighters/Factories/CarloHighlighterFactory.cpp \
 		Highlighters/CarloHighlighter.cpp \
-		InputDevices/NullInputDevice.cpp \
 		InputDevices/SPIKeyboard.cpp \
 		LineDrivers/NullLineDriver.cpp \
 		LineDrivers/PICSerialLineDriver.cpp \
@@ -106,7 +80,6 @@ SOURCES=Actors/Linda2Actor.cpp \
 		Loggers/SerialLogger.cpp \
 		Memories/KiamaFSMemory.cpp \
 		Memories/Memory.cpp \
-		Memories/RAMMemory.cpp \
 		Memories/SPIFlash.cpp \
 		NativeActors/EntropyActor.cpp \
 		NativeActors/EventTimerActor.cpp \
@@ -118,19 +91,19 @@ SOURCES=Actors/Linda2Actor.cpp \
 		NativeActors/WorldActor.cpp \
 		Platforms/BoopiePlatform.cpp \
 		Platforms/Platform.cpp \
-		PresenceLoaders/Factories/DummyPresenceLoaderFactory.cpp \
 		PresenceLoaders/Factories/EncryptedPresenceLoaderFactory.cpp \
 		PresenceLoaders/Factories/Linda2PresenceLoaderFactory.cpp \
-		PresenceLoaders/DummyPresenceLoader.cpp \
+		PresenceLoaders/Factories/OfflinePresenceLoaderFactory.cpp \
 		PresenceLoaders/EncryptedPresenceLoader.cpp \
 		PresenceLoaders/Linda2PresenceLoader.cpp \
+		PresenceLoaders/OfflinePresenceLoader.cpp \
 		PresenceLoaders/PresenceLoader.cpp \
 		PresenceLoaders/PresenceRequest.cpp \
-		SceneLoaders/Factories/DemoSceneLoaderFactory.cpp \
 		SceneLoaders/Factories/EncryptedSceneLoaderFactory.cpp \
+		SceneLoaders/Factories/KiamaFSSceneLoaderFactory.cpp \
 		SceneLoaders/Factories/Linda2SceneLoaderFactory.cpp \
-		SceneLoaders/DemoSceneLoader.cpp \
 		SceneLoaders/EncryptedSceneLoader.cpp \
+		SceneLoaders/KiamaFSSceneLoader.cpp \
 		SceneLoaders/Linda2SceneLoader.cpp \
 		SceneLoaders/Linda2SceneLoaderResponder.cpp \
 		SceneLoaders/SceneLoader.cpp \
@@ -142,10 +115,10 @@ SOURCES=Actors/Linda2Actor.cpp \
 		Statements/SendsStatement.cpp \
 		Statements/StopStatement.cpp \
 		Statements/WhileStatement.cpp \
-		TelegramLoaders/Factories/DummyTelegramLoaderFactory.cpp \
 		TelegramLoaders/Factories/Linda2TelegramLoaderFactory.cpp \
-		TelegramLoaders/DummyTelegramLoader.cpp \
+		TelegramLoaders/Factories/NullTelegramLoaderFactory.cpp \
 		TelegramLoaders/Linda2TelegramLoader.cpp \
+		TelegramLoaders/NullTelegramLoader.cpp \
 		TelegramLoaders/TelegramLoader.cpp \
 		Timers/Factories/PIC32PrecisionTimerFactory.cpp \
 		Timers/Factories/PIC32TimerFactory.cpp \
@@ -220,9 +193,9 @@ SOURCES=Actors/Linda2Actor.cpp \
 		World/WorldMetadata.cpp \
 		World/WorldSummary.cpp \
 		World/WorldUtilities.cpp \
-		WorldLoaders/Factories/DummyWorldLoaderFactory.cpp \
+		WorldLoaders/Factories/KiamaFSWorldLoaderFactory.cpp \
 		WorldLoaders/Factories/Linda2WorldLoaderFactory.cpp \
-		WorldLoaders/DummyWorldLoader.cpp \
+		WorldLoaders/KiamaFSWorldLoader.cpp \
 		WorldLoaders/Linda2WorldLoader.cpp \
 		Allocator.cpp \
 		ANSIEditor.cpp \
@@ -238,7 +211,6 @@ SOURCES=Actors/Linda2Actor.cpp \
 		Client.cpp \
 		ConfigurationStore.cpp \
 		ConnectionMonitor.cpp \
-		DummyData.cpp \
 		Editor.cpp \
 		EditorFactory.cpp \
 		ExecutionContext.cpp \
@@ -248,7 +220,6 @@ SOURCES=Actors/Linda2Actor.cpp \
 		KiamaFS.cpp \
 		Lexer.cpp \
 		Linda2.cpp \
-		Multiplexer.cpp \
 		Parser.cpp \
 		Phonebook.cpp \
 		PICSerial.cpp \
@@ -281,8 +252,10 @@ CSOURCES=Encryptors/AES/tiny-AES-c/aes.c \
          Encryptors/SHA256/sha256.c \
 		 Utils/base64/base64.c
 
-OBJECTS:=${SOURCES:.cpp=.o} ${CSOURCES:.c=.o}
-DEPS:=$(SOURCES:.cpp=.d) $(CSOURCES:.c=.d)
+OBJECTS:=$(patsubst %,build/%,$(patsubst %.cpp,%.o,$(SOURCES))) \
+         $(patsubst %,build/%,$(patsubst %.c,%.o,$(CSOURCES)))
+DEPS:=$(patsubst %,build/%,$(patsubst %.cpp,%.d,$(SOURCES))) \
+	  $(patsubst %,build/%,$(patsubst %.c,%.d,$(CSOURCES)))
 
 EXECUTABLE=agape
 HEXFILE=$(EXECUTABLE).hex
@@ -295,15 +268,15 @@ $(EXECUTABLE): $(OBJECTS)
 $(HEXFILE): $(EXECUTABLE)
 	$(BIN2HEX) $(EXECUTABLE)
 
-%.o: %.cpp
+build/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o: %.c
+build/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.d: %.cpp
+build/%.d: %.cpp
 	@echo [DEP] $*
 	@mkdir -p $(@D)
 	@set -e; rm -f $@; \
@@ -311,7 +284,7 @@ $(HEXFILE): $(EXECUTABLE)
 	 sed 's,$(notdir $*)\.o[ :]*,$*.o $@ : ,g' < $@.$$$$ > $@; \
 	 rm -f $@.$$$$
 
-%.d: %.c
+build/%.d: %.c
 	@echo [DEP] $*
 	@mkdir -p $(@D)
 	@set -e; rm -f $@; \
@@ -321,7 +294,7 @@ $(HEXFILE): $(EXECUTABLE)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJECTS) $(DEPS) agape *.i *.ii *.s *.d* *.map
+	rm -rf build/ $(EXECUTABLE) $(HEXFILE) *.o *.s *.map
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
