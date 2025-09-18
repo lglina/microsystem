@@ -7,6 +7,17 @@
 namespace Agape
 {
 
+namespace AssetLoaders
+{
+class AssetCache;
+class Factory;
+} // namespace AssetLoaders
+
+namespace PresenceLoaders
+{
+class OfflinePresenceStore;
+} // namespace PresenceLoaders
+
 namespace SceneLoaders
 {
 class Factory;
@@ -20,8 +31,9 @@ class PIC32Absolute;
 } // namespace Timers
 
 class BusController;
-//class KiamaFS;
-//class Memory;
+class KiamaFS;
+class Memory;
+class PICSerial;
 class SPIController;
 class SPIRequester;
 
@@ -31,7 +43,7 @@ namespace ClientBuilders
 class BoopieOffline : public ClientBuilder
 {
 public:
-    BoopieOffline();
+    BoopieOffline( ReadableWritable& debugSerial );
     ~BoopieOffline();
 
 private:
@@ -63,12 +75,14 @@ private:
     virtual void buildSplash();
     virtual void buildMiniMapAssetLoaderFactory();
 
+    ReadableWritable& m_debugSerial;
+
     BusController* m_bus;
     Timers::PIC32Absolute* m_absoluteTimer;
     Timers::Factory* m_pic32PrecisionTimerFactory;
 
-    //Memory* m_flash;
-    //KiamaFS* m_fs;
+    Memory* m_flash;
+    KiamaFS* m_fs;
     Memory* m_configurationStoreMemory;
 
     SPIController* m_spiController;
@@ -76,6 +90,13 @@ private:
 
     SceneLoaders::Factory* m_sceneLoaderBackingFactory;
     SceneLoaders::Linda2Responder* m_sceneLoaderResponder;
+
+    PresenceLoaders::OfflinePresenceStore* m_offlinePresenceStore;
+
+    PICSerial* m_midiSerial;
+
+    AssetLoaders::Factory* m_miniMapAssetLoaderBackingFactory;
+    AssetLoaders::AssetCache* m_miniMapAssetCache;
 };
 
 } // namespace ClientBuilders

@@ -98,13 +98,19 @@ private:
     AssetLoaders::Factory* m_assetLoaderEncryptedFactory;
     AssetLoaders::Factory* m_assetLoaderBackingFactory;
     AssetLoaders::AssetCache* m_assetCache;
+
     AssetLoaders::Factory* m_programAssetLoaderEncryptedFactory;
     AssetLoaders::Factory* m_programAssetLoaderBackingFactory;
     AssetLoaders::AssetCache* m_programAssetCache;
+
     AssetLoaders::Factory* m_telegramAssetLoaderBackingFactory;
+
     SceneLoaders::Factory* m_sceneLoaderBackingFactory;
+
     PresenceLoaders::Factory* m_presenceLoaderBackingFactory;
+
     PICSerial* m_midiSerial;
+
     AssetLoaders::Factory* m_miniMapAssetLoaderBackingFactory;
     AssetLoaders::AssetCache* m_miniMapAssetCache;
 };

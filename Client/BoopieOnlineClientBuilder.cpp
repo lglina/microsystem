@@ -1,25 +1,18 @@
 #include "AssetLoaders/Caches/KiamaFSAssetCache.h"
-#include "AssetLoaders/Caches/RAMAssetCache.h"
 #include "AssetLoaders/Factories/CacheAssetLoaderFactory.h"
-#include "AssetLoaders/Factories/DemoAssetLoaderFactory.h"
 #include "AssetLoaders/Factories/EncryptedAssetLoaderFactory.h"
 #include "AssetLoaders/Factories/Linda2AssetLoaderFactory.h"
 #include "AssetLoaders/Factories/MiniMapAssetLoaderFactory.h"
 #include "Audio/MIDIPlayers/SAM2695MIDIPlayer.h"
 #include "Clocks/VRTimeClock.h"
-#include "EntropySources/DummyEntropySource.h"
 #include "EntropySources/SPIEntropySource.h"
-#include "EventClocks/DummyEventClock.h"
+#include "EventClocks/NullEventClock.h"
 #include "GraphicsDrivers/RA8873.h"
-#include "GraphicsDrivers/RA8875.h"
 #include "InputDevices/SPIKeyboard.h"
-#include "LineDrivers/NullLineDriver.h"
 #include "LineDrivers/PICSerialLineDriver.h"
-#include "Lines/DummyModemLine.h"
 #include "Lines/ModemLine.h"
 #include "Loggers/Logger.h"
 #include "Memories/KiamaFSMemory.h"
-#include "Memories/RAMMemory.h"
 #include "Memories/SPIFlash.h"
 #include "Platforms/BoopiePlatform.h"
 #include "PresenceLoaders/Factories/EncryptedPresenceLoaderFactory.h"
@@ -159,18 +152,6 @@ void BoopieOnline::buildPerformanceTimerFactory()
 
 void BoopieOnline::buildConfigurationStore()
 {
-    /*
-    m_assetLoaderFactory = new AssetLoaders::Factories::Demo();
-    
-    Memories::RAM* ramMemory( new Memories::RAM( 2048, 256, Memory::eeprom ) );
-    World::Coordinates coordinates;
-    AssetLoaders::Factories::Demo demoLoaderFactory;
-    AssetLoader* assetLoader( demoLoaderFactory.makeLoader( coordinates, "config-memory" ) );
-    ramMemory->loadFromAsset( *assetLoader );
-    delete( assetLoader );
-    m_configurationStoreMemory = ramMemory;
-    */
-
     m_spiController = new SPIController( 1,
                                          4000000, // Hz
                                          true, // true = master
@@ -194,7 +175,6 @@ void BoopieOnline::buildConfigurationStore()
 void BoopieOnline::buildGraphicsDriver()
 {
     m_graphicsDriver = new GraphicsDrivers::RA8873( *m_bus, *m_pic32PrecisionTimerFactory );
-    //m_graphicsDriver = new GraphicsDrivers::RA8875( *m_bus, *m_pic32PrecisionTimerFactory );
     InterruptDispatcher::s_graphicsDriver = m_graphicsDriver;
 }
 
@@ -213,13 +193,11 @@ void BoopieOnline::buildLineDriver()
     Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART1Rx, m_lineSerial );
 #endif
     m_lineDriver = new LineDrivers::PICSerial( *m_lineSerial, *m_timerFactory );
-    //m_lineDriver = new LineDrivers::Null;
 }
 
 void BoopieOnline::buildLine()
 {
     m_line = new Lines::Modem( *m_lineDriver );
-    //m_line = new Lines::DummyModem( *m_lineDriver, *m_configurationStore, *m_timerFactory );
 }
 
 void BoopieOnline::buildInputDevice()
@@ -243,7 +221,12 @@ void BoopieOnline::buildTupleRoute()
 void BoopieOnline::buildClock()
 {
     m_clock = new Clocks::VRTime( *m_vrTime );
-    m_eventClock = new EventClocks::Dummy( *m_tupleRouter );
+    m_eventClock = new EventClocks::Null( *m_tupleRouter );
+}
+
+void BoopieOnline::buildEntropySource()
+{
+    m_entropySource = new EntropySources::SPI( *m_spiRequester, *m_timerFactory );
 }
 
 void BoopieOnline::buildAssetLoaderFactory()
@@ -259,7 +242,6 @@ void BoopieOnline::buildAssetLoaderFactory()
                                                                             m_encryptorFactory,
                                                                             m_hash,
                                                                             true ); // true = encrypt asset names.
-    //m_assetCache = new AssetLoaders::Caches::RAMAssetCache( 50, 500, *m_clock );
     m_assetCache = new AssetLoaders::Caches::KiamaFSAssetCache( 50,
                                                                 10000,
                                                                 *m_fs,
@@ -284,7 +266,6 @@ void BoopieOnline::buildProgramAssetLoaderFactory()
                                                                                    m_encryptorFactory,
                                                                                    m_hash,
                                                                                    true ); // true = encrypt asset names.
-    //m_programAssetCache = new AssetLoaders::Caches::RAMAssetCache( 10, 1000, *m_clock );
     m_programAssetCache = new AssetLoaders::Caches::KiamaFSAssetCache( 50,
                                                                        10000,
                                                                        *m_fs,
@@ -308,7 +289,7 @@ void BoopieOnline::buildTelegramAssetLoaderFactory()
 
 void BoopieOnline::buildMIDIAssetLoaderFactory()
 {
-    m_midiAssetLoaderFactory = new AssetLoaders::Factories::Demo();
+    m_midiAssetLoaderFactory = new AssetLoaders::Factories::Baked();
 }
 
 void BoopieOnline::buildSceneLoaderFactory()
@@ -345,18 +326,11 @@ void BoopieOnline::buildMIDIPlayer()
     Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3Rx, m_midiSerial );
 #endif
     m_midiPlayer = new Audio::MIDIPlayers::SAM2695( *m_midiAssetLoaderFactory, *m_midiSerial );
-    //m_midiPlayer = new Audio::MIDIPlayers::Null();
 }
 
 void BoopieOnline::buildWorldLoaderFactory()
 {
     m_worldLoaderFactory = new WorldLoaders::Factories::Linda2( *m_tupleRouter, *m_timerFactory );
-}
-
-void BoopieOnline::buildEntropySource()
-{
-    //m_entropySource = new EntropySources::Dummy;
-    m_entropySource = new EntropySources::SPI( *m_spiRequester, *m_timerFactory );
 }
 
 void BoopieOnline::buildSplash()
