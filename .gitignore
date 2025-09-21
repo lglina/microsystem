@@ -22,3 +22,10 @@ TerminalSimulator/snap-*.png
 *.o
 *moc_*.cpp
 *moc_*.h
+Client/build/
+Client/agape
+Client/agape.hex
+Client/mapfile.map
+Client/*.s
+Client/nbproject/private
+Client/Estelle/nbproject/private
