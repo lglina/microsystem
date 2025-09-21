@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>com.microchip.mplab.nbide.embedded.makeproject</type>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/make-project/1">
+            <name>agape-estelle</name>
+            <creation-uuid>cd65748b-a8fb-43ea-8f34-e8e98d851f6a</creation-uuid>
+            <make-project-type>0</make-project-type>
+            <make-dep-projects/>
+            <sourceRootList/>
+            <confList>
+                <confElem>
+                    <name>default</name>
+                    <type>9</type>
+                </confElem>
+            </confList>
+            <sourceEncoding>ISO-8859-1</sourceEncoding>
+            <formatting>
+                <project-formatting-style>false</project-formatting-style>
+            </formatting>
+        </data>
+    </configuration>
+</project>
