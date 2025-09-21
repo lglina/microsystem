@@ -6,7 +6,7 @@ ESTELLE_DIR=$(abspath Estelle)
 KIAMA_DIR=$(abspath ../KiamaFS)
 LINDA2_DIR=$(abspath ../Linda2)
 VPATH=$(AGAPE_DIR) $(ANSI_EDITOR_DIR) $(CARLO_DIR) $(EDITOR_DIR) $(KIAMA_DIR) $(LINDA2_DIR)
-XC32BIN=/opt/microchip/xc32/v4.45/bin
+XC32BIN=/opt/microchip/xc32/v4.60/bin
 DEFINES=-DLOG_TUPLES_BRIEF
 #DEFINES=-DKIAMA_DEBUG -DLOG_LOADERS
 

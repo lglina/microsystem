@@ -1,7 +1,7 @@
 AGAPE_DIR=$(abspath ../../Agape)
 KIAMA_DIR=$(abspath ../../kiamafs)
 VPATH=$(AGAPE_DIR) $(KIAMA_DIR)
-XC32BIN=/opt/microchip/xc32/v4.45/bin
+XC32BIN=/opt/microchip/xc32/v4.60/bin
 #DEFINES=-DLOG_SPI -DLOG_KEYB
 DEFINES=
 
