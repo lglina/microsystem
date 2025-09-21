@@ -1350,7 +1350,7 @@ void ANSIEditor::clipCopyHeightMap( bool doZero )
 
     int heightMapSourceStartOffset( ( absY * heightMapWidth ) + absX );
     int heightMapDestStartOffset( 0 );
-    int copyWidth( m_selectionWidth );
+    int copyWidth( m_clipWidth );
 
     char* sourcePtr( m_heightMap + heightMapSourceStartOffset );
     char* destPtr( m_clipHeightMap + heightMapDestStartOffset );
