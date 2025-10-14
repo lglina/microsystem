@@ -29,6 +29,7 @@
 #include "Timers/Factories/HighResTimerFactory.h"
 #include "TupleRoutes/ReadableWritableTupleRoute.h"
 #include "UI/Strategies/Splash.h"
+#include "UI/Strategies/TestStrategy.h"
 #include "WorldLoaders/Factories/Linda2WorldLoaderFactory.h"
 #include "ConfigurationStore.h"
 #include "KiamaFS.h"
@@ -284,6 +285,15 @@ void SimulatedOnline::buildSplash()
                                            *m_inputDevice,
                                            *m_timerFactory,
                                            *m_platform );
+
+    m_testStrategy = new UI::Strategies::Test( *m_windowManager,
+                                               _Map,
+                                               *m_inputDevice,
+                                               *m_platform,
+                                               *m_fsMemory,
+                                               *m_midiPlayer,
+                                               *m_entropySource,
+                                               *m_timerFactory );
 }
 
 void SimulatedOnline::buildMiniMapAssetLoaderFactory()
