@@ -263,35 +263,6 @@ void BusController::setAddress( int address )
         NOT_LCD_CS_SET;
     }
 #endif
-
-/////////////////////
-#ifdef false
-    // We don't have external logic driving the LCD signals so set
-    // them now, if an LCD address is selected.
-
-    while( PMMODEbits.BUSY == 1 ) {}
-
-    if( address == BusAddresses::GraphCommand )
-    {
-        NOT_LCD_CS_CLR;
-        LCD_RS_CLR;
-    }
-    else if( address == BusAddresses::GraphData )
-    {
-        NOT_LCD_CS_CLR;
-        LCD_RS_SET;
-    }
-    else if( address == BusAddresses::GraphReset )
-    {
-        NOT_LCD_CS_SET;
-        NOT_LCD_RESET_CLR;
-    }
-    else
-    {
-        NOT_LCD_CS_SET;
-        NOT_LCD_RESET_SET;
-    }
-#endif
 }
 
 } // namespace Agape
