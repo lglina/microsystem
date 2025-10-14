@@ -2,6 +2,7 @@
 #include "Timers/Factories/TimerFactory.h"
 #include "Timers/Timer.h"
 #include "Utils/RingBuffer.h"
+#include "Utils/StrToHex.h"
 #include "EstelleEntropySource.h"
 #include "PICSerial.h"
 
@@ -16,7 +17,7 @@ namespace EntropySources
 Estelle::Estelle( Timers::Factory& timerFactory,
                   PICSerial& picSerial ) :
   m_timer( timerFactory.makeTimer() ),
-  m_picSerial( picSerial ),
+  m_picSerial( picSerial ), // Not used normally - can be used for direct entropy dumping for debugging.
   m_entropyPool( 64 ),
   m_shiftIn( 0 ),
   m_shiftCount( 0 ),
@@ -69,38 +70,6 @@ void Estelle::run()
         m_shiftIn = 0;
         m_shiftCount = 0;
     }
-    
-    // TESTING
-    /*
-    while( 1 )
-    {
-    int bit1 = PORTCbits.RC0;
-    //m_timer->usleep( 10 );
-    int bit2 = PORTCbits.RC0;
-    //m_timer->usleep( 10 );
-
-    if( bit1 != bit2 )
-    {
-        m_shiftIn |= ( bit1 << m_shiftCount++ );
-    }
-
-    if( m_shiftCount == 8 )
-    {
-        //if( m_entropyPool.isFull() ) m_entropyPool.pop();
-        //m_entropyPool.push( m_shiftIn );
-        m_picSerial.write( m_shiftIn );
-        m_shiftIn = 0;
-        m_shiftCount = 0;
-        if( m_count < 100 ) m_count++;
-        if( m_count == 100 )
-        {
-            LOG_DEBUG( "              " );
-            ++m_count;
-        }
-    }
-    if( m_count < 100 ) break;
-    }
-    */
 }
 
 void Estelle::setPowerState( enum PowerState powerState )
