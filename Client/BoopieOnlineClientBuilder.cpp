@@ -347,7 +347,8 @@ void BoopieOnline::buildSplash()
                                                *m_flash,
                                                *m_midiPlayer,
                                                *m_entropySource,
-                                               *m_timerFactory );
+                                               *m_timerFactory,
+                                               &m_debugSerial );
 }
 
 void BoopieOnline::buildMiniMapAssetLoaderFactory()
