@@ -6,10 +6,10 @@ XC32BIN=/opt/microchip/xc32/v4.45/bin
 DEFINES=
 
 CXX=$(XC32BIN)/xc32-g++
-CXXFLAGS=-mprocessor=32MM0256GPM064 -mmalloc-variant=binned -g $(DEFINES) -I. -I.. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -Wl,--defsym=_min_heap_size=16384,--defsym=_DEBUGGER=1,--report-mem -save-temps -Wl,-Map,mapfile.map -fno-exceptions
+CXXFLAGS=-mprocessor=32MM0256GPM064 -mmalloc-variant=binned -g $(DEFINES) -I. -I.. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -Wl,--defsym=_min_heap_size=16384,--defsym=_DEBUGGER=1,--report-mem -save-temps=obj -Wl,-Map,mapfile.map -fno-exceptions
 
 CC=$(XC32BIN)/xc32-gcc
-CFLAGS=-mprocessor=32MM0256GPM064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -Wl,--defsym=_min_heap_size=16384,--defsym=_DEBUGGER=1,--report-mem -save-temps -Wl,-Map,mapfile.map -fno-exceptions
+CFLAGS=-mprocessor=32MM0256GPM064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -Wl,--defsym=_min_heap_size=16384,--defsym=_DEBUGGER=1,--report-mem -save-temps=obj -Wl,-Map,mapfile.map -fno-exceptions
 
 BIN2HEX=$(XC32BIN)/xc32-bin2hex
 
@@ -45,8 +45,10 @@ SOURCES=EntropySources/EstelleEntropySource.cpp \
 
 CSOURCES=
 
-OBJECTS:=${SOURCES:.cpp=.o} ${CSOURCES:.c=.o}
-DEPS:=$(SOURCES:.cpp=.d) $(CSOURCES:.c=.d)
+OBJECTS:=$(patsubst %,build/%,$(patsubst %.cpp,%.o,$(SOURCES))) \
+         $(patsubst %,build/%,$(patsubst %.c,%.o,$(CSOURCES)))
+DEPS:=$(patsubst %,build/%,$(patsubst %.cpp,%.d,$(SOURCES))) \
+	  $(patsubst %,build/%,$(patsubst %.c,%.d,$(CSOURCES)))
 
 EXECUTABLE=estelle
 HEXFILE=$(EXECUTABLE).hex
@@ -59,15 +61,15 @@ $(EXECUTABLE): $(OBJECTS)
 $(HEXFILE): $(EXECUTABLE)
 	$(BIN2HEX) $(EXECUTABLE)
 
-%.o: %.cpp
+build/%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-%.o: %.c
+build/%.o: %.c
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.d: %.cpp
+build/%.d: %.cpp
 	@echo [DEP] $*
 	@mkdir -p $(@D)
 	@set -e; rm -f $@; \
@@ -75,7 +77,7 @@ $(HEXFILE): $(EXECUTABLE)
 	 sed 's,$(notdir $*)\.o[ :]*,$*.o $@ : ,g' < $@.$$$$ > $@; \
 	 rm -f $@.$$$$
 
-%.d: %.c
+build/%.d: %.c
 	@echo [DEP] $*
 	@mkdir -p $(@D)
 	@set -e; rm -f $@; \
@@ -85,7 +87,7 @@ $(HEXFILE): $(EXECUTABLE)
 
 .PHONY: clean
 clean:
-	rm -rf $(OBJECTS) $(DEPS) estelle *.i *.ii *.s *.d* *.map
+	rm -rf build/ $(EXECUTABLE) $(HEXFILE) *.o *.s *.map
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
