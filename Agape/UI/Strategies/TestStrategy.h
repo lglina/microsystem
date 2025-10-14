@@ -2,6 +2,7 @@
 #define AGAPE_UI_STRATEGIES_TEST_H
 
 #include "UI/Strategy.h"
+#include "Collections.h"
 #include "String.h"
 
 namespace Agape
@@ -23,6 +24,7 @@ class EntropySource;
 class InputDevice;
 class Memory;
 class Platform;
+class ReadableWritable;
 class Terminal;
 class Timer;
 class Value;
@@ -44,7 +46,8 @@ public:
           Agape::Memory& memory,
           MIDIPlayer& midiPlayer,
           EntropySource& entropySource,
-          Timers::Factory& timerFactory );
+          Timers::Factory& timerFactory,
+          ReadableWritable* rawDebug = nullptr );
 
     ~Test();
 
@@ -65,7 +68,8 @@ private:
         TestFlash,
         TestModem,
         TestSound,
-        TestRNG
+        TestRNG,
+        TestRNGHist
     };
 
     void setState();
@@ -76,11 +80,16 @@ private:
     MIDIPlayer& m_midiPlayer;
     EntropySource& m_entropySource;
 
+    ReadableWritable* m_rawDebug;
+
     Terminal* m_terminal;
 
     Timer* m_timer;
 
     enum State m_state;
+
+    Vector<int> m_histogram;
+    int m_histStart;
 };
 
 } // namespace Strategies

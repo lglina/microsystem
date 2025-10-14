@@ -10,6 +10,7 @@
 #include "Utils/StrToHex.h"
 #include "Utils/LiteStream.h"
 #include "World/WorldCoordinates.h"
+#include "ReadableWritable.h"
 #include "String.h"
 #include "StringConstants.h"
 #include "Terminal.h"
@@ -39,20 +40,29 @@ Test::Test( WindowManager& windowManager,
             Agape::Memory& memory,
             MIDIPlayer& midiPlayer,
             EntropySource& entropySource,
-            Timers::Factory& timerFactory ) :
+            Timers::Factory& timerFactory,
+            ReadableWritable* rawDebug ) :
   m_inputDevice( inputDevice ),
   m_platform( platform ),
   m_memory( memory ),
   m_midiPlayer( midiPlayer ),
   m_entropySource( entropySource ),
+  m_rawDebug( rawDebug ),
   m_terminal( nullptr ),
   m_timer( timerFactory.makeTimer() ),
-  m_state( TestScreen )
+  m_state( TestScreen ),
+  m_histStart( 0 )
 {
     WindowManager::TerminalWindow terminalWindow;
     if( windowManager.getTerminalWindow( windowName, terminalWindow ) )
     {
         m_terminal = terminalWindow.m_terminal;
+    }
+
+    m_histogram.reserve( 256 );
+    for( int i = 0; i < 256; ++i )
+    {
+        m_histogram.push_back( 0 );
     }
 }
 
@@ -114,6 +124,9 @@ void Test::run()
                 m_state = TestRNG;
                 break;
             case TestRNG:
+                m_state = TestRNGHist;
+                break;
+            case TestRNGHist:
             default:
                 m_state = TestScreen;
                 break;
@@ -188,6 +201,16 @@ void Test::run()
                 m_midiPlayer.doStop( true ); // true = hard stop.
             }
         }
+        else if( m_state == TestRNGHist )
+        {
+            if( c == 'c' )
+            {
+                for( int i = 0; i < 256; ++i )
+                {
+                    m_histogram[i] = 0;
+                }
+            }
+        }
     }
 
     switch( m_state )
@@ -202,7 +225,23 @@ void Test::run()
         }
         break;
     case TestRNG:
-        if( m_timer->ms() >= 500 )
+        if( m_rawDebug )
+        {
+            {
+            int numGenerated( 0 );
+            do
+            {
+                char c;
+                numGenerated = m_entropySource.generate( &c, 1 );
+                if( numGenerated == 1 )
+                {
+                    m_rawDebug->write( &c, 1 );
+                }
+            }
+            while( numGenerated > 0 );
+            }
+        }
+        else if( m_timer->ms() >= 500 )
         {
             char c;
             if( m_entropySource.generate( &c, 1 ) == 1 )
@@ -218,6 +257,49 @@ void Test::run()
             m_terminal->consumeNext( currentRow, currentCol, 0x0F );
             
             m_timer->reset();
+        }
+        break;
+    case TestRNGHist:
+        {
+        unsigned char c;
+        if( m_entropySource.generate( (char*)&c, 1 ) == 1 )
+        {
+            m_histogram[c]++;
+        }
+
+        if( m_timer->ms() >= 250 )
+        {
+            m_terminal->clearScreen();
+            int i = m_histStart;
+            for( int cols = 0; cols < 64; ++cols )
+            {
+                if( i % 8 == 0 )
+                {
+                    // Display column label
+                    m_terminal->consumeNext( m_terminal->height() - 1, cols );
+                    m_terminal->consumeString( ucharToHex( i ) );
+                }
+
+                int maxHeight( m_terminal->height() - 2 );
+                for( int j = maxHeight; j >= 0; j-- )
+                {
+                    int mult = m_histogram[i] / maxHeight / 2;
+                    if( m_histogram[i] == ( ( mult * maxHeight ) + ( maxHeight - j ) ) * 2 )
+                    {
+                        m_terminal->consumeNext(j, cols, ( mult % 15 ) + 1);
+                        m_terminal->consumeChar('\xb1');
+                    }
+                }
+
+                ++i;
+                if( i == 256 ) i = 0;
+            }
+
+            m_histStart += 16;
+            if( m_histStart == 256 ) m_histStart = 0;
+
+            m_timer->reset();
+        }
         }
         break;
     default:
@@ -266,6 +348,10 @@ void Test::setState()
     case TestRNG:
         m_terminal->clearScreen();
         m_terminal->consumeString( "RNG test\r\n" );
+        m_timer->reset();
+        break;
+    case TestRNGHist:
+        m_terminal->clearScreen();
         m_timer->reset();
         break;
     default:
