@@ -15,7 +15,11 @@ namespace Memories
 class File : public Memory
 {
 public:
-    File( const String& filename, enum Type type, long createSize = 1048576, long sectorSize = 4096 );
+    File( const String& filename,
+          enum Type type,
+          long createSize = 1048576,
+          long pageSize = 256,
+          long sectorSize = 4096 );
     ~File();
 
     virtual enum Type type();
@@ -25,10 +29,12 @@ public:
     virtual bool erase( int addr, int len );
 
     virtual int size();
+    virtual int pageSize();
     virtual int sectorSize();
 
 private:
     enum Type m_type;
+    long m_pageSize;
     long m_sectorSize;
 
     int m_fd;

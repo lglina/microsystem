@@ -14,7 +14,7 @@ namespace Memories
 class RAM : public Memory
 {
 public:
-    RAM( int size, int sectorSize, enum Type type );
+    RAM( int size, int pageSize, int sectorSize, enum Type type );
     ~RAM();
 
     virtual enum Type type();
@@ -24,12 +24,14 @@ public:
     virtual bool erase( int addr, int len );
 
     virtual int size();
+    virtual int pageSize();
     virtual int sectorSize();
 
     void loadFromAsset( AssetLoader& assetLoader );
 
 private:
     int m_size;
+    int m_pageSize;
     int m_sectorSize;
     enum Type m_type;
     char* m_data;

@@ -15,8 +15,13 @@ namespace Agape
 namespace Memories
 {
 
-File::File( const String& filename, enum Type type, long createSize, long sectorSize ) :
+File::File( const String& filename,
+            enum Type type,
+            long createSize,
+            long pageSize,
+            long sectorSize ) :
   m_type( type ),
+  m_pageSize( pageSize ),
   m_sectorSize( sectorSize )
 {
     struct stat sb;
@@ -146,6 +151,11 @@ bool File::erase( int addr, int len )
 int File::size()
 {
     return m_size;
+}
+
+int File::pageSize()
+{
+    return m_pageSize;
 }
 
 int File::sectorSize()

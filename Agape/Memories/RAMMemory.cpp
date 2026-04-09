@@ -10,8 +10,9 @@ namespace Agape
 namespace Memories
 {
 
-RAM::RAM( int size, int sectorSize, enum Type type ) :
+RAM::RAM( int size, int pageSize, int sectorSize, enum Type type ) :
   m_size( size ),
+  m_pageSize( pageSize ),
   m_sectorSize( sectorSize ),
   m_type( type ),
 #ifdef NOEXCEPT
@@ -104,6 +105,11 @@ bool RAM::erase( int addr, int len )
 int RAM::size()
 {
     return m_size;
+}
+
+int RAM::pageSize()
+{
+    return m_pageSize;
 }
 
 int RAM::sectorSize()

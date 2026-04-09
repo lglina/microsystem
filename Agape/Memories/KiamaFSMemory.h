@@ -24,6 +24,7 @@ public:
     virtual void seek( int offset );
 
     virtual int size();
+    virtual int pageSize();
     virtual int sectorSize();
 
     virtual void flushOutput();

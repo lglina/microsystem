@@ -30,7 +30,9 @@ public:
     virtual void seek( int offset );
 
     virtual int size() = 0;
+    virtual int pageSize() = 0;
     virtual int sectorSize() = 0;
+    virtual int eraseBlockSize() { return sectorSize(); };
 
 protected:
     int m_rwAddress;

@@ -85,6 +85,11 @@ int KiamaFS::size()
     return 0;
 }
 
+int KiamaFS::pageSize()
+{
+    return -1;
+}
+
 int KiamaFS::sectorSize()
 {
     return -1;
