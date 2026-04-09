@@ -8,8 +8,8 @@
 namespace
 {
     const int bufferSize = 128;
-    const int requestSize = 8;
-    const int pollTime = 500; // ms
+    const int requestSize = 16;
+    const int pollTime = 250; // ms
     const int waitTime = 5; // ms
 } // Anonymous namespace
 
@@ -56,7 +56,8 @@ int SPI::poolRemain()
 
 void SPI::run()
 {
-    if( !m_requestSent &&
+    if( !m_entropyPool.isFull() &&
+        !m_requestSent &&
         ( m_timer->ms() >= pollTime ) &&
         !m_spiRequester.busy() )
     {
