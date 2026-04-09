@@ -19,12 +19,14 @@ namespace Timers
 class Factory;
 } // namespace Timers
 
+class PICADC;
 class Timer;
 
 class PlatformController : public SPIResponseSource
 {
 public:
     PlatformController( InputDevices::BetaKeyboard& inputDevice,
+                        PICADC& picADC,
                         Timers::Factory& timerFactory );
 
     ~PlatformController();
@@ -42,10 +44,13 @@ public:
                              int maxResponseLength );
 
 private:
+    void doSleep();
+
     InputDevices::BetaKeyboard& m_inputDevice;
+    PICADC& m_picADC;
 
     Timer* m_resetTimer;
-    Timer* m_sampleTimer;
+    Timer* m_sleepTimer;
 
     bool m_powerOn;
     bool m_holdingReset;
