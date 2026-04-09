@@ -134,18 +134,7 @@ void Test::run()
             setState();
         }
 
-        if( m_state == TestScreen )
-        {
-            if( c == control( Key::up ) )
-            {
-                m_platform.brightnessUp();
-            }
-            else if( c == control( Key::down ) )
-            {
-                m_platform.brightnessDown();
-            }
-        }
-        else if( m_state == TestPowerSupply )
+        if( m_state == TestPowerSupply )
         {
             if( c == Key::up )
             {
@@ -225,6 +214,7 @@ void Test::run()
         }
         break;
     case TestRNG:
+        /*
         if( m_rawDebug )
         {
             {
@@ -241,12 +231,13 @@ void Test::run()
             while( numGenerated > 0 );
             }
         }
-        else if( m_timer->ms() >= 500 )
+        */
+        if( m_timer->ms() >= 500 )
         {
             char c;
             if( m_entropySource.generate( &c, 1 ) == 1 )
             {
-                m_terminal->consumeString( ucharToHex( *( (unsigned char*)( &c ) ) ) );
+                m_terminal->consumeString( ucharToHex( *( (unsigned char*)( &c ) ) ) + "  " );
             }
             int currentRow( m_terminal->row() );
             int currentCol( m_terminal->col() );
@@ -254,7 +245,7 @@ void Test::run()
             LiteStream stream;
             stream << "Pool bytes " << m_entropySource.poolRemain() << "/" << m_entropySource.poolSize();
             m_terminal->consumeString( stream.str() );
-            m_terminal->consumeNext( currentRow, currentCol, 0x0F );
+            m_terminal->consumeNext( currentRow, currentCol, 0x07 );
             
             m_timer->reset();
         }
@@ -284,7 +275,8 @@ void Test::run()
                 for( int j = maxHeight; j >= 0; j-- )
                 {
                     int mult = m_histogram[i] / maxHeight / 2;
-                    if( m_histogram[i] == ( ( mult * maxHeight ) + ( maxHeight - j ) ) * 2 )
+                    int currentHeight( ( ( mult * maxHeight ) + ( maxHeight - j ) ) * 2 );
+                    if( ( m_histogram[i] == currentHeight ) || ( m_histogram[i] == ( currentHeight - 1 ) ) )
                     {
                         m_terminal->consumeNext(j, cols, ( mult % 15 ) + 1);
                         m_terminal->consumeChar('\xb1');
