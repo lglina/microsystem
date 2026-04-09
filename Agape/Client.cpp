@@ -19,6 +19,7 @@ Client::Client( Line& line,
                 UI::PlatformUI& platformUI,
                 InputDevice& inputDevice,
                 EntropySource& entropySource,
+                EntropySource* keyEntropySource,
                 MIDIPlayer& midiPlayer,
                 EventClock& eventClock,
                 Linda2::Actors::NativeActors::EventTimer& eventTimer,
@@ -29,6 +30,7 @@ Client::Client( Line& line,
   m_platformUI( platformUI ),
   m_inputDevice( inputDevice ),
   m_entropySource( entropySource ),
+  m_keyEntropySource( keyEntropySource ),
   m_midiPlayer( midiPlayer ),
   m_eventClock( eventClock ),
   m_eventTimer( eventTimer ),
@@ -46,9 +48,10 @@ void Client::run()
     m_line.run();
     m_connectionMonitor.run();
     m_platform.run();
-    m_platformUI.run();
     m_inputDevice.run();
+    m_platformUI.run(); // Must be after InputDevice and before Session, so PlatformUI can peek keystrokes.
     m_entropySource.run();
+    if( m_keyEntropySource ) m_keyEntropySource->run();
     m_midiPlayer.run();
     m_eventClock.run();
     m_eventTimer.run();

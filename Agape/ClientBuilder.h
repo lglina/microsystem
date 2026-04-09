@@ -116,6 +116,7 @@ protected:
     virtual void buildWorldLoaderFactory() = 0;
     virtual void buildSplash() = 0;
     virtual void buildMiniMapAssetLoaderFactory() = 0;
+    virtual void buildUpdate() = 0;
 
     int m_machineID;
     Timers::Factory* m_timerFactory;
@@ -138,6 +139,7 @@ protected:
     Snowflake* m_snowflake;
     Carlo::ProgramManager* m_programManager;
     EntropySource* m_entropySource;
+    EntropySource* m_keyEntropySource;
     Encryptors::Factory* m_encryptorFactory;
     Encryptors::BlockFactory* m_blockEncryptorFactory;
     Hash* m_hash;
@@ -159,6 +161,8 @@ protected:
     UI::Strategy* m_testStrategy;
     World::MiniMap* m_miniMap;
     AssetLoaders::Factory* m_miniMapAssetLoaderFactory;
+    Memory* m_updateMemory;
+    UI::Strategy* m_updateStrategy;
 
 private:
     void deleteMembers();

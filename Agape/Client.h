@@ -49,6 +49,7 @@ public:
             UI::PlatformUI& platformUI,
             InputDevice& inputDevice,
             EntropySource& entropySource,
+            EntropySource* keyEntropySource,
             MIDIPlayer& midiPlayer,
             EventClock& eventClock,
             Linda2::Actors::NativeActors::EventTimer& eventTimer,
@@ -65,6 +66,7 @@ private:
     UI::PlatformUI& m_platformUI;
     InputDevice& m_inputDevice;
     EntropySource& m_entropySource;
+    EntropySource* m_keyEntropySource;
     MIDIPlayer& m_midiPlayer;
     EventClock& m_eventClock;
     Linda2::Actors::NativeActors::EventTimer& m_eventTimer;

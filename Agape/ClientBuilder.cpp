@@ -344,7 +344,12 @@ Client* ClientBuilder::build( Chooser& chooser )
                                           *m_clock,
                                           *m_midiPlayer );
 
-    m_keyUtilities = new KeyUtilities( *m_entropySource,
+    // Optionally use a separate entropy source for keys. This is so we can
+    // use the slow reverse-biased transistor source on the MS1 for key
+    // generation but use the inbuilt PIC32 thermal noise source for other
+    // uses that require higher speed entropy.
+    EntropySource* keyEntropySource = m_keyEntropySource ? m_keyEntropySource : m_entropySource;
+    m_keyUtilities = new KeyUtilities( *keyEntropySource,
                                        *m_encryptorFactory,
                                        *m_hash );
     m_worldUtilities = new World::Utilities( *m_keyUtilities,
@@ -416,6 +421,7 @@ Client* ClientBuilder::build( Chooser& chooser )
                                        _Map,
                                        *m_tabBar,
                                        *m_inputDevice,
+                                       *m_configurationStore,
                                        *m_timerFactory );
 
     m_notificationsUI = new UI::NotificationsUI( *m_telegramLoaderFactory,
@@ -479,6 +485,7 @@ Client* ClientBuilder::build( Chooser& chooser )
                                                          _Map,
                                                          *m_inputDevice,
                                                          *m_phonebook,
+                                                         *m_line,
                                                          *m_dialogue );
     
     m_worldbookStrategy = new UI::Strategies::Worldbook( *m_windowManager,
@@ -533,7 +540,6 @@ Client* ClientBuilder::build( Chooser& chooser )
                                        *m_navigation,
                                        *m_presence,
                                        *m_vrTime,
-                                       *m_platform,
                                        *m_platformUI,
                                        *m_notificationsUI,
                                        *m_timerFactory,
@@ -722,6 +728,8 @@ Client* ClientBuilder::build( Chooser& chooser )
     m_eventTimerActor = new Agape::Linda2::Actors::NativeActors::EventTimer( *m_timerFactory,
                                                                              *m_tupleRouter );
 
+    buildUpdate();
+
     LOG_DEBUG( "Building session" );
     Map< String, UI::Strategy* > strategies;
     strategies[_splash] = m_splash;
@@ -762,6 +770,11 @@ Client* ClientBuilder::build( Chooser& chooser )
         strategies[_test] = m_testStrategy;
     }
 
+    if( m_updateStrategy )
+    {
+        strategies[_update] = m_updateStrategy;
+    }
+
     m_session = new Session( strategies, _splash );
 
     m_connectionMonitor = new ConnectionMonitor( *m_line,
@@ -778,6 +791,7 @@ Client* ClientBuilder::build( Chooser& chooser )
                            *m_platformUI,
                            *m_inputDevice,
                            *m_entropySource,
+                           m_keyEntropySource,
                            *m_midiPlayer,
                            *m_eventClock,
                            *m_eventTimerActor,
@@ -800,6 +814,8 @@ void ClientBuilder::deleteMembers()
     delete( m_client );
     delete( m_connectionMonitor );
     delete( m_session );
+    delete( m_updateStrategy );
+    delete( m_updateMemory );
     delete( m_eventTimerActor );
     delete( m_entropyActor );
     delete( m_platformActor );
@@ -871,6 +887,7 @@ void ClientBuilder::deleteMembers()
     delete( m_hash );
     delete( m_blockEncryptorFactory );
     delete( m_encryptorFactory );
+    delete( m_keyEntropySource );
     delete( m_entropySource );
     delete( m_programManager );
     delete( m_snowflake );
@@ -932,6 +949,7 @@ void ClientBuilder::setMembersNull()
     m_snowflake = nullptr;
     m_programManager = nullptr;
     m_entropySource = nullptr;
+    m_keyEntropySource = nullptr;
     m_encryptorFactory = nullptr;
     m_blockEncryptorFactory = nullptr;
     m_hash = nullptr;
@@ -1017,6 +1035,8 @@ void ClientBuilder::setMembersNull()
     m_platformActor = nullptr;
     m_entropyActor = nullptr;
     m_eventTimerActor = nullptr;
+    m_updateMemory = nullptr;
+    m_updateStrategy = nullptr;
     m_session = nullptr;
     m_connectionMonitor = nullptr;
     m_client = nullptr;
