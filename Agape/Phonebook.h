@@ -19,6 +19,8 @@ public:
 
     Map< String, String > getEntries() const;
 
+    bool getNumberByName( const String& name, String& number ) const;
+
     bool hasDefaultEntry() const;
     bool getDefaultEntry( String& name, String& number ) const;
     void setDefaultEntry( const String& name );

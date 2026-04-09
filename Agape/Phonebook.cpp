@@ -69,6 +69,22 @@ Map< String, String > Phonebook::getEntries() const
     return entries;
 }
 
+bool Phonebook::getNumberByName( const String& name, String& number ) const
+{
+    if( m_configurationStore.hasKey( _phonebook ) )
+    {
+        Value& phonebook( m_configurationStore.get( _phonebook ) );
+        if( phonebook.hasValue( name ) )
+        {
+            const Value& entry( phonebook[name] );
+            number = entry[_number];
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool Phonebook::hasDefaultEntry() const
 {
     return( m_configurationStore.hasKey( _phonebook ) && m_configurationStore.hasKey( _defaultPhonebookEntry ) );
