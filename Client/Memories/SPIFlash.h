@@ -15,7 +15,13 @@ namespace Memories
 class SPIFlash : public Memory
 {
 public:
-    SPIFlash( SPIController& spiController, BusController& busController );
+    SPIFlash( SPIController& spiController,
+              BusController& busController,
+              int size,
+              int pageSize,
+              int sectorSize,
+              int eraseBlockSize,
+              int baseAddress );
 
     virtual enum Type type();
 
@@ -25,7 +31,9 @@ public:
     virtual bool erase();
 
     virtual int size();
+    virtual int pageSize();
     virtual int sectorSize();
+    virtual int eraseBlockSize();
 
     void readID( char* id );
 
@@ -36,6 +44,12 @@ private:
 
     SPIController& m_spiController;
     BusController& m_busController;
+
+    int m_size;
+    int m_pageSize;
+    int m_sectorSize;
+    int m_eraseBlockSize;
+    int m_baseAddress;
 };
 
 } // namespace Memories

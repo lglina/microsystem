@@ -1,6 +1,8 @@
 #include "Loggers/Logger.h"
 #include "Memories/Memory.h"
 #include "Memories/SPIFlash.h"
+#include "Utils/LiteStream.h"
+#include "Utils/StrToHex.h"
 #include "BusAddresses.h"
 #include "BusController.h"
 #include "SPIController.h"
@@ -12,6 +14,7 @@ namespace
     const char rdsrCommand( '\x05' );
     const char wrenCommand( '\x06' );
     const char sectorEraseCommand( '\x20' );
+    const char blockEraseCommand( '\xd8' );
     const char chipEraseCommand( '\x60' );
     const char readIDCommand( '\x9f' );
 } // Anonymous namespace
@@ -22,9 +25,20 @@ namespace Agape
 namespace Memories
 {
 
-SPIFlash::SPIFlash( SPIController& spiController, BusController& busController ) :
+SPIFlash::SPIFlash( SPIController& spiController,
+                    BusController& busController,
+                    int size,
+                    int pageSize,
+                    int sectorSize,
+                    int eraseBlockSize,
+                    int baseAddress ) :
   m_spiController( spiController ),
-  m_busController( busController )
+  m_busController( busController ),
+  m_size( size ),
+  m_pageSize( pageSize ),
+  m_sectorSize( sectorSize ),
+  m_eraseBlockSize( eraseBlockSize ),
+  m_baseAddress( baseAddress )
 {
 }
 
@@ -37,6 +51,7 @@ int SPIFlash::read( int addr, char* data, int len )
 {
     m_busController.write( BusAddresses::CSFlash, 0x00 );
     m_spiController.write( readCommand );
+    addr += m_baseAddress;
     m_spiController.write( addr >> 16 );
     m_spiController.write( addr >> 8 );
     m_spiController.write( addr );
@@ -51,12 +66,12 @@ int SPIFlash::read( int addr, char* data, int len )
 int SPIFlash::write( int addr, const char* data, int len )
 {
     int lenWritten( 0 );
-    int baseAddress( addr );
+    addr += m_baseAddress;
     while( lenWritten < len )
     {
-        int sectorRemain( sectorSize() - ( baseAddress % sectorSize() ) );
+        int pageRemain( m_pageSize - ( addr % m_pageSize ) );
         int lenRemain( len - lenWritten );
-        int lenThisWrite( ( sectorRemain > lenRemain ) ? lenRemain : sectorRemain );
+        int lenThisWrite( ( pageRemain > lenRemain ) ? lenRemain : pageRemain );
         writePage( addr + lenWritten, data + lenWritten, lenThisWrite );
         lenWritten += lenThisWrite;
     }
@@ -66,46 +81,75 @@ int SPIFlash::write( int addr, const char* data, int len )
 
 bool SPIFlash::erase( int addr, int len )
 {
-    // FIXME: Ensure len is exactly one sector and is aligned!
-    writeEnable();
+    if( ( addr < 0 ) ||
+        ( ( addr + len ) > m_size ) ||
+        ( ( addr % m_sectorSize ) != 0 ) ||
+        ( ( len % m_sectorSize ) != 0 ) )
+    {
+        return false;
+    }
 
-    m_busController.write( BusAddresses::CSFlash, 0x00 );
-    m_spiController.write( sectorEraseCommand );
-    m_spiController.write( addr >> 16 );
-    m_spiController.write( addr >> 8 );
-    m_spiController.write( addr );
-    m_busController.write( 0x00, 0x00 ); // De-assert CS to complete write.
+    addr += m_baseAddress;
 
-    // FIXME: Delay needed?
+    // See if we can use faster bulk erase commands.
+    // FIXME: We can't assume chip erase is safe here, as we don't have the
+    // total flash size, only the partition size.
+    char eraseCommand( sectorEraseCommand );
+    int eraseLength( m_sectorSize );
+    if( ( ( addr % m_eraseBlockSize ) == 0 ) &&
+        ( ( len % m_eraseBlockSize ) == 0 ) )
+    {
+        eraseCommand = blockEraseCommand;
+        eraseLength = m_eraseBlockSize;
+    }
 
-    waitWrite();
+    while( len > 0 )
+    {
+        writeEnable();
+#ifdef LOG_SPI
+        LiteStream stream;
+        stream << "Erase flash at " << uintToHex( addr );
+        LOG_DEBUG( stream.str() );
+#endif
+        m_busController.write( BusAddresses::CSFlash, 0x00 );
+        m_spiController.write( eraseCommand );
+        m_spiController.write( addr >> 16 );
+        m_spiController.write( addr >> 8 );
+        m_spiController.write( addr );
+        m_busController.write( 0x00, 0x00 ); // De-assert CS to complete write.
+
+        waitWrite();
+
+        addr += eraseLength;
+        len -= eraseLength;
+    }
 
     return true;
 }
 
 bool SPIFlash::erase()
 {
-    writeEnable();
-
-    m_busController.write( BusAddresses::CSFlash, 0x00 );
-    m_spiController.write( chipEraseCommand );
-    m_busController.write( 0x00, 0x00 ); // De-assert CS to complete write.
-
-    // FIXME: Delay needed?
-
-    waitWrite();
-
-    return true;
+    return erase( 0, m_size );
 }
 
 int SPIFlash::size()
 {
-    return 1048576;
+    return m_size;
+}
+
+int SPIFlash::pageSize()
+{
+    return m_pageSize;
 }
 
 int SPIFlash::sectorSize()
 {
-    return 4096;
+    return m_sectorSize;
+}
+
+int SPIFlash::eraseBlockSize()
+{
+    return m_eraseBlockSize;
 }
 
 void SPIFlash::readID( char* id )
@@ -124,8 +168,6 @@ void SPIFlash::writeEnable()
     m_busController.write( BusAddresses::CSFlash, 0x00 );
     m_spiController.write( wrenCommand );
     m_busController.write( 0x00, 0x00 );
-
-    // FIXME: Delay needed?
 
 #ifdef LOG_SPI
     LOG_DEBUG( "SPIFlash: Read SR" );
@@ -153,10 +195,15 @@ void SPIFlash::writePage( int addr, const char* data, int len )
 {
 #ifdef LOG_SPI
     LOG_DEBUG( "SPIFlash: Start write cycle" );
+
+    LiteStream stream;
+    stream << "Write flash at " << uintToHex( addr );
+    LOG_DEBUG( stream.str() );
 #endif
 
     writeEnable();
 
+    // addr is absolute here, not relative to m_baseAddress.
     m_busController.write( BusAddresses::CSFlash, 0x00 );
     m_spiController.write( pageProgramCommand );
     m_spiController.write( addr >> 16 );
@@ -164,8 +211,6 @@ void SPIFlash::writePage( int addr, const char* data, int len )
     m_spiController.write( addr );
     m_spiController.write( data, len );
     m_busController.write( 0x00, 0x00 ); // De-assert CS to complete write.
-
-    // FIXME: Delay needed?
 
     waitWrite();
 
