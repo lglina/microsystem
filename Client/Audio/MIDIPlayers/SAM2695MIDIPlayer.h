@@ -31,6 +31,7 @@ class SAM2695 : public FrobMIDIPlayer, public InterruptHandler
 {
 public:
     SAM2695( AssetLoaders::Factory& assetLoaderFactory, PICSerial& midiOut );
+    ~SAM2695();
 
     virtual void programChange( int channel, int instrument );
     virtual void playNote( int channel, int pitch, int velocity );

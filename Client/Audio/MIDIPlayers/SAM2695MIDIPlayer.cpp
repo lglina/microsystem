@@ -35,6 +35,11 @@ SAM2695::SAM2695( AssetLoaders::Factory& assetLoaderFactory, PICSerial& midiOut 
     Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::timer1, this );
 }
 
+SAM2695::~SAM2695()
+{
+    Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::timer1 );
+}
+
 void SAM2695::programChange( int channel, int instrument )
 {
     char midiEvent[2];
