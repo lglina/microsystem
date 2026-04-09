@@ -58,6 +58,7 @@ private:
         carrierPending,
         success,
         message,
+        update,
         error
     };
 
@@ -91,6 +92,9 @@ private:
     Terminal* m_terminal;
 
     bool m_nonInteractive;
+
+    String m_name;
+    String m_number;
 };
 
 } // namespace Strategies

@@ -64,6 +64,9 @@ void Connect::enter( const Value& parameters )
 
     m_nonInteractive = ( (int)parameters[_nonInteractive] == 1 );
 
+    m_name.clear();
+    m_number.clear();
+
     LOG_DEBUG( "ConnectStrategy: Entering" );
     Line::LineStatus lineStatus( m_line.getLineStatus() );
     if( lineStatus.m_carrier )
@@ -76,16 +79,23 @@ void Connect::enter( const Value& parameters )
     {
         LOG_DEBUG( "ConnectStrategy: No carrier. Checking for default phonebook entry." );
         m_completed = false;
-        
-        // FIXME: Could allow PhonebookStrategy to pass an entry name as a
-        // parameter here, to allow connecting to something other than the
-        // current default entry.
-        if( m_phonebook.hasDefaultEntry() )
+
+        if( parameters.hasValue( _name ) )
         {
-            String defaultName;
-            String defaultNumber;
-            m_phonebook.getDefaultEntry( defaultName, defaultNumber );
-            bool requiresAuthentication( m_phonebook.requiresAuthentication( defaultName ) );
+            // Caller specified name and number.
+            m_name = parameters[_name];
+            m_phonebook.getNumberByName( m_name, m_number ); // m_number remains empty if entry not found.
+        }
+        else if( m_phonebook.hasDefaultEntry() )
+        {
+            // Use default
+            m_phonebook.getDefaultEntry( m_name, m_number );
+        }
+
+        if( !m_name.empty() &&
+            !m_number.empty() )
+        {
+            bool requiresAuthentication( m_phonebook.requiresAuthentication( m_name ) );
 
             LOG_DEBUG( "ConnectStrategy: Checking if auth required." );
             if( ( m_configurationStore.hasKey( _accountAuthKey ) &&
@@ -130,6 +140,12 @@ void Connect::returnTo( const Value& parameters )
     m_nextStrategy.clear();
 
     if( m_state == message )
+    {
+        m_nextStrategy = _update;
+        m_state = update;
+        m_calling = true;
+    }
+    else if( m_state == update )
     {
         m_returnParameters[_success] = 1;
         m_completed = true;
@@ -248,7 +264,7 @@ void Connect::run()
             }
             else
             {
-                // Skip server MOTD
+                // Skip server MOTD and update check
                 m_returnParameters[_success] = 1;
                 m_completed = true;
             }
@@ -328,10 +344,7 @@ void Connect::hideDialogue()
 
 bool Connect::dial()
 {
-    String name;
-    String number;
-    m_phonebook.getDefaultEntry( name, number );
-    m_line.dial( number );
+    m_line.dial( m_number );
     return true;
 }
 
