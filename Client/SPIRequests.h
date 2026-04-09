@@ -11,6 +11,9 @@ enum SPIRequestTypes
     SPIReadInput,
     SPIReadPowerState,
     SPIReadEntropy,
+    SPISetIlluminationUp,
+    SPISetIlluminationDown,
+    SPIReadIllumination,
     SPISetIllumination,
     SPISetAlert,
     SPIReadSensors
