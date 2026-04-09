@@ -22,6 +22,7 @@ class PIC32Absolute;
 
 class BatteryMonitor;
 class Illumination;
+class PICADC;
 class PICSerial;
 class PlatformController;
 class SPIController;
@@ -38,6 +39,7 @@ private:
     Timers::PIC32Absolute* m_absoluteTimer;
     Timers::Factory* m_timerFactory;
     Timers::Factory* m_precisionTimerFactory;
+    PICADC* m_picADC;
     InputDevices::BetaKeyboard* m_keyboard;
     PlatformController* m_platformController;
     SPIController* m_spiController;

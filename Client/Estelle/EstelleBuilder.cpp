@@ -8,6 +8,7 @@
 #include "EstelleBuilder.h"
 #include "Illumination.h"
 #include "InterruptHandler.h"
+#include "PICADC.h"
 #include "PICSerial.h"
 #include "PlatformController.h"
 #include "ReadableWritable.h"
@@ -31,16 +32,18 @@ Estelle* EstelleBuilder::build( PICSerial& picSerial )
 
     m_precisionTimerFactory = new Timers::Factories::PIC32PrecisionTimerFactory;
 
+    m_picADC = new PICADC( *m_precisionTimerFactory );
+
     m_keyboard = new InputDevices::BetaKeyboard( *m_timerFactory );
 
-    m_platformController = new PlatformController( *m_keyboard, *m_timerFactory );
+    m_platformController = new PlatformController( *m_keyboard,
+                                                   *m_picADC,
+                                                   *m_timerFactory );
 
     m_spiController = new SPIController( 1,
                                          100000, // Hz
                                          false, // false = slave
                                          *m_timerFactory );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Rx, m_spiController );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Tx, m_spiController );
 
     m_spiResponder = new SPIResponder( *m_spiController );
 
@@ -52,9 +55,12 @@ Estelle* EstelleBuilder::build( PICSerial& picSerial )
     m_spiResponder->registerResponseSource( m_spiEntropySender, SPIReadEntropy );
 
     m_illumination = new Illumination;
+    m_spiResponder->registerResponseSource( m_illumination, SPISetIlluminationUp );
+    m_spiResponder->registerResponseSource( m_illumination, SPISetIlluminationDown );
+    m_spiResponder->registerResponseSource( m_illumination, SPIReadIllumination );
     m_spiResponder->registerResponseSource( m_illumination, SPISetIllumination );
 
-    m_batteryMonitor = new BatteryMonitor( *m_timerFactory );
+    m_batteryMonitor = new BatteryMonitor( *m_picADC, *m_timerFactory );
     m_spiResponder->registerResponseSource( m_batteryMonitor, SPIReadPowerState );
 
     m_platformController->registerPowerControllable( m_spiController );
@@ -64,14 +70,13 @@ Estelle* EstelleBuilder::build( PICSerial& picSerial )
     m_spiResponder->registerResponseSource( m_platformController, SPISetAlert );
     m_spiResponder->registerResponseSource( m_platformController, SPIReadSensors );
 
-    m_platformController->setPowerState( PowerControllable::on );
-
     return new Estelle( *m_keyboard,
                         *m_platformController,
                         *m_spiResponder,
                         *m_entropySource,
                         *m_illumination,
-                        *m_batteryMonitor );
+                        *m_batteryMonitor,
+                        *m_picADC );
 }
 
 } // namespace Agape

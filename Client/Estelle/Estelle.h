@@ -8,6 +8,7 @@ class BatteryMonitor;
 class EntropySource;
 class Illumination;
 class InputDevice;
+class PICADC;
 class PlatformController;
 class SPIResponder;
 
@@ -19,7 +20,8 @@ public:
              SPIResponder& spiResponder,
              EntropySource& entropySource,
              Illumination& illumination,
-             BatteryMonitor& batteryMonitor );
+             BatteryMonitor& batteryMonitor,
+             PICADC& picADC );
 
     void run();
 
@@ -30,6 +32,7 @@ private:
     SPIResponder& m_spiResponder;
     Illumination& m_illumination;
     BatteryMonitor& m_batteryMonitor;
+    PICADC& m_picADC;
 };
 
 } // namespace Agape
