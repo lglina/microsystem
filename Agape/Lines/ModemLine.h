@@ -36,9 +36,6 @@ public:
 
 private:
     bool m_isOpen;
-
-    int m_txCounter;
-    int m_rxCounter;
 };
 
 } // namespace Lines

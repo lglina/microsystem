@@ -24,9 +24,7 @@ namespace Lines
 
 Modem::Modem( LineDriver& lineDriver ) :
   Line( lineDriver ),
-  m_isOpen( false ),
-  m_txCounter( 0 ),
-  m_rxCounter( 0 )
+  m_isOpen( false )
 {
 }
 
@@ -35,37 +33,18 @@ void Modem::open()
     LOG_DEBUG( "Modem: Opening" );
     m_lineDriver.open();
     m_isOpen = true;
+    m_lineDriver.dataTerminalReady( false ); // Force into command mode if in data mode.
     LOG_DEBUG( "Modem: Open" );
 }
 
 int Modem::read( char* data, int len )
 {
-    int numRead( m_lineDriver.read( data, len ) );
-    /*
-    if( numRead > 0 )
-    {
-        m_rxCounter += numRead;
-        LiteStream stream;
-        stream << "RX: " << m_rxCounter;
-        LOG_DEBUG( stream.str() );
-    }
-    */
-    return numRead;
+    return( m_lineDriver.read( data, len ) );
 }
 
 int Modem::write( const char* data, int len )
 {
-    int numWritten( m_lineDriver.write( data, len ) );
-    /*
-    if( numWritten > 0 )
-    {
-        m_txCounter += numWritten;
-        LiteStream stream;
-        stream << "TX: " << m_txCounter;
-        LOG_DEBUG( stream.str() );
-    }
-    */
-    return numWritten;
+    return( m_lineDriver.write( data, len ) );
 }
 
 Vector< Line::ConfigOption > Modem::getConfigOptions()
@@ -134,6 +113,8 @@ void Modem::setConfigOption( const String& name, const String& value )
 
 void Modem::connect()
 {
+    // Connect the line, e.g. for WiFi connect to an AP but don't connect
+    // to a server yet (that's what dial does).
     LOG_DEBUG( "Modem: Connecting" );
     if( !m_isOpen )
     {
@@ -162,6 +143,8 @@ void Modem::dial( const String& number )
         return;
     }
 
+    m_lineDriver.dataTerminalReady( true ); // Allow data mode.
+
     LiteStream commandStream;
     commandStream << "ATD" << number << "\r\n";
     String command( commandStream.str() );
@@ -173,9 +156,8 @@ void Modem::dial( const String& number )
     readLine( response, longReadTimeout );
     LOG_DEBUG( "Modem: Response: " + response );
 
-    if( response == "OK" )
+    if( response == "OK" && m_lineDriver.dataCarrierDetect() )
     {
-        // TODO: Use DCD input.
         m_lineStatus.m_carrier = true;
         m_lineStatus.m_secure = ( number.substr( 0, 3 ) == "wss" );
     }
@@ -188,8 +170,7 @@ void Modem::answer()
 
 void Modem::hangup()
 {
-    // FIXME: Stub.
-    // TODO: How do we signal this?
+    m_lineDriver.dataTerminalReady( false ); // Force disconnect and back into command mode.
 }
 
 struct Line::LineStatus Modem::getLineStatus()
@@ -199,9 +180,13 @@ struct Line::LineStatus Modem::getLineStatus()
         return Line::LineStatus();
     }
 
-    // FIXME: Detect carrier drop with DCD input and reset m_carrier (and m_secure).
+    m_lineStatus.m_carrier = m_lineDriver.dataCarrierDetect();
+    if( !m_lineStatus.m_carrier ) m_lineStatus.m_secure = false;
+
     if( !m_lineStatus.m_carrier )
     {
+        // In command mode, so we can periodically poll the line status.
+        // (E.g. for WiFi, whether we're connected to an AP.)
         ++m_lineStatusCounter;
         if( m_lineStatusCounter == 1000 )
         {
