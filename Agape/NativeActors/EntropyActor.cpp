@@ -40,15 +40,21 @@ bool Entropy::perform( Value& returnValue,
 {
     if( name == "number" )
     {
-        int number;
-        m_entropySource.generate( (char*)&number, sizeof( int ) );
-        number = ::abs( number );
-        if( arguments.find( "limit" ) != arguments.end() )
+        int number( 0 );
+        if( m_entropySource.generate( (char*)&number, sizeof( int ) ) == sizeof( int ) )
         {
-            int limit = *( arguments["limit"] );
-            number %= limit;
+            number = ::abs( number );
+            if( arguments.find( "limit" ) != arguments.end() )
+            {
+                int limit = *( arguments["limit"] );
+                number %= limit;
+            }
+            returnValue = number;
         }
-        returnValue = number;
+        else
+        {
+            returnValue = Value();
+        }
         return true;
     }
 
