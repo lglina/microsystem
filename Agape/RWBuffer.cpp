@@ -29,6 +29,12 @@ int RWBuffer::write( const char* data, int len )
     if( ( m_offset + len ) >= m_size )
     {
         flushOutput();
+
+        if( len > m_size )
+        {
+            // Too large. Just pass through.
+            return m_rw.write( data, len );
+        }
     }
 
     ::memcpy( m_buffer + m_offset, data, len );
