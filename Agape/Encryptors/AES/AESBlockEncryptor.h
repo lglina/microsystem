@@ -46,7 +46,7 @@ private:
     void flushWriteBuffer();
 
     EntropySource& m_entropySource;
-    std::uint8_t m_key[AES_BLOCKLEN];
+    std::uint8_t m_key[AES_KEYLEN];
     std::uint8_t m_iv[AES_BLOCKLEN];
 
     char* m_writeBuffer;
