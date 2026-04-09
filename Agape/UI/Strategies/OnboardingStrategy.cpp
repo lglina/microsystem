@@ -237,6 +237,7 @@ void Onboarding::returnTo( const Value& parameters )
             m_phonebook.add( m_defaultPhoneName, m_defaultPhoneNumber );
             m_state = connect;
             m_nextStrategy = "connect";
+            m_callingParameters[_nonInteractive] = 1; // Don't check for software updates and show the MOTD.
             m_calling = true;
         }
         else
@@ -255,6 +256,7 @@ void Onboarding::returnTo( const Value& parameters )
         else
         {
             m_nextStrategy = "connect";
+            m_callingParameters[_nonInteractive] = 1; // Don't check for software updates and show the MOTD.
             m_calling = true;
         }
         break;
