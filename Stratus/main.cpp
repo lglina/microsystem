@@ -1,6 +1,11 @@
 #include "Loggers/Logger.h"
 #include "Loggers/StreamLogger.h"
-#include "Stratus.h"
+
+#ifdef HYDRA
+#include "WSHydraStratus.h"
+#else
+#include "WSRedisStratus.h"
+#endif
 
 int main( int argc, char** argv )
 {
