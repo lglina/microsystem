@@ -47,11 +47,15 @@ public:
 
     virtual struct PowerState powerState();
 
-    virtual void brightnessUp();
-    virtual void brightnessDown();
+    virtual void screenBrightnessUp();
+    virtual void screenBrightnessDown();
+    virtual int getScreenBrightness();
+    virtual void setScreenBrightness( int brightness );
 
     virtual void keyboardBrightnessUp();
     virtual void keyboardBrightnessDown();
+    virtual int getKeyboardBrightness();
+    virtual void setKeyboardBrightness( int brightness );
 
     virtual void notify( enum NotifyType type, enum NotifySource source );
     virtual void cancelNotify( enum NotifyType type );
@@ -59,6 +63,10 @@ public:
     virtual void readSensors( char* data, int maxLength );
 
     virtual String internalState();
+
+    virtual int buildNumber();
+
+    virtual void reset();
 
     virtual void run();
 
@@ -72,27 +80,31 @@ private:
     BusController& m_bus;
     SPIRequester& m_spiRequester;
     KiamaFS* m_fs;
-    Timer* m_estelleQueryTimer;
+    
+    Timer* m_powerStateQueryTimer;
+    Timer* m_keyboardBrightnessQueryTimer;
+    Timer* m_sensorsQueryTimer;
     Timer* m_blockingQueryTimer;
 
-    bool m_estelleRequestSent;
+    bool m_readPowerStateSent;
     struct PowerState m_powerState;
 
     unsigned char m_userPortCurrent;
 
     static char* s_heapStart;
 
-    bool m_needSendKeyboardBacklight;
-    int m_keyboardBacklightCount;
+    bool m_needSendKeyboardBrightnessUp;
+    bool m_needSendKeyboardBrightnessDown;
+    bool m_needSendSetKeyboardBrightness;
+    bool m_readKeyboardBrightnessSent;
+    int m_keyboardBrightness;
 
     bool m_needSendAlertState;
     bool m_alertState;
 
-    bool m_needReadSensors;
+    bool m_readSensorsSent;
     int m_ambientSensorValue;
     int m_lidSensorValue;
-
-    char m_lastRawState;
 
     // Last raw state from Estelle
     short m_charge;

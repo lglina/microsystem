@@ -13,14 +13,18 @@
 #include "SPIRequester.h"
 #include "SPIRequests.h"
 #include "String.h"
+#include "Version.h"
 
 #include <string.h>
 
+#include <xc.h>
+
 namespace
 {
-    const int estelleQueryPeriod( 1000 ); // ms
+    const int powerStateQueryPeriod( 1000 ); // ms
+    const int keyboardBrightnessQueryPeriod( 10000 ); // ms
+    const int sensorsQueryPeriod( 10000 ); // ms
     const int waitTime( 5 ); // ms
-    const int sensorsWaitTime( 100 ); // ms
 
     const int cellCapacity( 2600 ); // mAh. FIXME: Make run-time configurable.
     const double capacityFracAtMaxCharge( 0.90 ); // FIXME: Make run-time configurable.
@@ -45,15 +49,20 @@ Boopie::Boopie( GraphicsDriver& graphicsDriver,
   m_bus( bus ),
   m_spiRequester( spiRequester ),
   m_fs( fs ),
-  m_estelleQueryTimer( timerFactory.makeTimer() ),
+  m_powerStateQueryTimer( timerFactory.makeTimer() ),
+  m_keyboardBrightnessQueryTimer( timerFactory.makeTimer() ),
+  m_sensorsQueryTimer( timerFactory.makeTimer() ),
   m_blockingQueryTimer( timerFactory.makeTimer() ),
-  m_estelleRequestSent( false ),
+  m_readPowerStateSent( false ),
   m_userPortCurrent( 0 ),
-  m_needSendKeyboardBacklight( false ),
-  m_keyboardBacklightCount( 2000 ),
+  m_needSendKeyboardBrightnessUp( false ),
+  m_needSendKeyboardBrightnessDown( false ),
+  m_needSendSetKeyboardBrightness( false ),
+  m_readKeyboardBrightnessSent( false ),
+  m_keyboardBrightness( 0 ),
   m_needSendAlertState( false ),
   m_alertState( false ),
-  m_needReadSensors( false ),
+  m_readSensorsSent( false ),
   m_ambientSensorValue( 0 ),
   m_lidSensorValue( 0 ),
   m_charge( 0 ),
@@ -66,7 +75,9 @@ Boopie::Boopie( GraphicsDriver& graphicsDriver,
 
 Boopie::~Boopie()
 {
-    delete( m_estelleQueryTimer );
+    delete( m_powerStateQueryTimer );
+    delete( m_keyboardBrightnessQueryTimer );
+    delete( m_sensorsQueryTimer );
     delete( m_blockingQueryTimer );
 }
 
@@ -130,40 +141,63 @@ struct Platform::PowerState Boopie::powerState()
     return m_powerState;
 }
 
-void Boopie::brightnessUp()
+void Boopie::screenBrightnessUp()
 {
-    m_graphicsDriver.brightnessUp();
+    m_graphicsDriver.screenBrightnessUp();
+
+    // Send event immediately.
+    Event event;
+    event.m_type = Platform::screenBrightnessChanged;
+    dispatchEvent( event ); // Prompts UI to call getScreenBrightness() to retrieve and save to configutation store.
 }
 
-void Boopie::brightnessDown()
+void Boopie::screenBrightnessDown()
 {
-    m_graphicsDriver.brightnessDown();
+    m_graphicsDriver.screenBrightnessDown();
+
+    // Send event immediately.
+    Event event;
+    event.m_type = Platform::screenBrightnessChanged;
+    dispatchEvent( event ); // Prompts UI to call getScreenBrightness() to retrieve and save to configutation store.
+}
+
+int Boopie::getScreenBrightness()
+{
+    return m_graphicsDriver.getScreenBrightness();
+}
+
+void Boopie::setScreenBrightness( int brightness )
+{
+    m_graphicsDriver.setScreenBrightness( brightness );
+
+    // Send event immediately.
+    Event event;
+    event.m_type = Platform::screenBrightnessChanged;
+    dispatchEvent( event ); // Prompts UI to call getScreenBrightness() to retrieve and save to configutation store.
 }
 
 void Boopie::keyboardBrightnessUp()
 {
-    // FIXME: Broken.
-    /*
-    m_keyboardBacklightCount += 1000;
-    if( m_keyboardBacklightCount > maxKeyboardBacklightCount )
-    {
-        m_keyboardBacklightCount = maxKeyboardBacklightCount;
-    }
-    m_needSendKeyboardBacklight = true;
-    */
+    m_needSendKeyboardBrightnessUp = true;
+    // Send keyboardBrightnessChanged event next time we poll the current brightness.
 }
 
 void Boopie::keyboardBrightnessDown()
 {
-    // FIXME: Broken.
-    /*
-    m_keyboardBacklightCount -= 1000;
-    if( m_keyboardBacklightCount < 0 )
-    {
-        m_keyboardBacklightCount = 0;
-    }
-    m_needSendKeyboardBacklight = true;
-    */
+    m_needSendKeyboardBrightnessDown = true;
+    // Send keyboardBrightnessChanged event next time we poll the current brightness.
+}
+
+int Boopie::getKeyboardBrightness()
+{
+    return m_keyboardBrightness;
+}
+
+void Boopie::setKeyboardBrightness( int brightness )
+{
+    m_keyboardBrightness = brightness;
+    m_needSendSetKeyboardBrightness = true;
+    // Send keyboardBrightnessChanged event next time we poll the current brightness.
 }
 
 void Boopie::notify( enum NotifyType type, enum NotifySource source )
@@ -180,17 +214,12 @@ void Boopie::cancelNotify( enum NotifyType type )
 
 void Boopie::readSensors( char* data, int maxLength )
 {
-    // FIXME: This returns the previously read data and requests a new read,
-    // which is currently blocking on Estelle. We need to make that non-blocking
-    // on the Estelle end, and non-blocking here in run(), then set up a timer
-    // to read it semi-regularly in the background.
     if( maxLength >= 4 )
     {
         data[0] = m_ambientSensorValue;
         data[1] = m_ambientSensorValue >> 8;
         data[2] = m_lidSensorValue;
         data[3] = m_lidSensorValue >> 8;
-        m_needReadSensors = true;
     }
 }
 
@@ -241,10 +270,31 @@ String Boopie::internalState()
     return stream.str();
 }
 
+int Boopie::buildNumber()
+{
+    return g_buildNumber;
+}
+
+void Boopie::reset()
+{
+    // Per PIC32 FRM s. 7.3.4.
+    __builtin_disable_interrupts();
+    SYSKEY = 0x00; // Unlock
+    SYSKEY = 0xAA996655;
+    SYSKEY = 0x556699AA;
+    RSWRSTSET = 1; // Write to arm
+    unsigned int dummy;
+    dummy = RSWRST; // Read to trigger
+    while(1);
+}
+
 void Boopie::run()
 {
-    if( !m_estelleRequestSent &&
-        ( m_estelleQueryTimer->ms() >= estelleQueryPeriod ) &&
+    // FIXME: In future this copypasta for async reads should be handled
+    // using the promise/future pattern, rather than having a million member
+    // variables in each class where it's done.
+    if( !m_readPowerStateSent &&
+        ( m_powerStateQueryTimer->ms() >= powerStateQueryPeriod ) &&
         !m_spiRequester.busy() )
     {
 #ifdef LOG_SPI
@@ -253,12 +303,12 @@ void Boopie::run()
         m_spiRequester.sendRequest( SPIReadPowerState,
                                     nullptr,
                                     0 );
-        m_estelleRequestSent = true;
-        m_estelleQueryTimer->reset();
+        m_readPowerStateSent = true;
+        m_powerStateQueryTimer->reset();
     }
 
-    if( m_estelleRequestSent &&
-        ( m_estelleQueryTimer->ms() >= waitTime ) )
+    if( m_readPowerStateSent &&
+        ( m_powerStateQueryTimer->ms() >= waitTime ) )
     {
         char response[maxSPIPayloadLength];
         int responseLength( m_spiRequester.readResponse( response ) );
@@ -286,29 +336,67 @@ void Boopie::run()
         LOG_DEBUG( "==Done reading power state==" );
 #endif
 
-        m_estelleRequestSent = false;
-        m_estelleQueryTimer->reset();
+        m_readPowerStateSent = false;
+        m_powerStateQueryTimer->reset();
     }
 
-    if( m_needSendKeyboardBacklight &&
+    if( m_needSendKeyboardBrightnessUp &&
         !m_spiRequester.busy() )
     {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Sending illumination up==" );
+#endif
+        m_spiRequester.sendRequest( SPISetIlluminationUp,
+                                    nullptr,
+                                    0 );
+        m_blockingQueryTimer->reset();
+        while( m_blockingQueryTimer->ms() < waitTime ) {}
+        char response[maxSPIPayloadLength];
+        m_spiRequester.readResponse( response );
+        m_needSendKeyboardBrightnessUp = false;
+    }
+
+    if( m_needSendKeyboardBrightnessDown &&
+        !m_spiRequester.busy() )
+    {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Sending illumination down==" );
+#endif
+        m_spiRequester.sendRequest( SPISetIlluminationDown,
+                                    nullptr,
+                                    0 );
+        m_blockingQueryTimer->reset();
+        while( m_blockingQueryTimer->ms() < waitTime ) {}
+        char response[maxSPIPayloadLength];
+        m_spiRequester.readResponse( response );
+        m_needSendKeyboardBrightnessDown = false;
+    }
+
+    if( m_needSendSetKeyboardBrightness &&
+        !m_spiRequester.busy() )
+    {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Sending illumination value==" );
+#endif
         char request[2];
-        request[0] = m_keyboardBacklightCount & 0xFF;
-        request[1] = ( m_keyboardBacklightCount >> 8 ) & 0xFF;
-        m_spiRequester.sendRequest( SPIReadPowerState,
+        request[0] = m_keyboardBrightness & 0xFF;
+        request[1] = ( m_keyboardBrightness >> 8 ) & 0xFF;
+        m_spiRequester.sendRequest( SPISetIllumination,
                                     request,
                                     2 );
         m_blockingQueryTimer->reset();
         while( m_blockingQueryTimer->ms() < waitTime ) {}
         char response[maxSPIPayloadLength];
         m_spiRequester.readResponse( response );
-        m_needSendKeyboardBacklight = false;
+        m_needSendSetKeyboardBrightness = false;
     }
 
     if( m_needSendAlertState &&
         !m_spiRequester.busy() )
     {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Sending alert state==" );
+#endif
         char request( m_alertState ? 1 : 0 );
         m_spiRequester.sendRequest( SPISetAlert,
                                     &request,
@@ -320,26 +408,88 @@ void Boopie::run()
         m_needSendAlertState = false;
     }
 
-    if( m_needReadSensors &&
+    if( !m_readKeyboardBrightnessSent &&
+        ( m_keyboardBrightnessQueryTimer->ms() >= keyboardBrightnessQueryPeriod ) &&
         !m_spiRequester.busy() )
     {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Reading keyboard brightness==" );
+#endif
+        m_spiRequester.sendRequest( SPIReadIllumination,
+                                    nullptr,
+                                    0 );
+        m_readKeyboardBrightnessSent = true;
+        m_keyboardBrightnessQueryTimer->reset();
+    }
+
+    if( m_readKeyboardBrightnessSent &&
+        ( m_keyboardBrightnessQueryTimer->ms() >= waitTime ) )
+    {
+        char response[maxSPIPayloadLength];
+        int responseLength( m_spiRequester.readResponse( response ) );
+
+        if( responseLength == 2 )
+        {
+#ifdef LOG_SPI
+            LOG_DEBUG( "Decoding keyboard brightness" );
+#endif
+            m_keyboardBrightness = *( (unsigned char*)response );
+            m_keyboardBrightness += ( (int)*( (unsigned char*)response + 1 ) ) << 8;
+
+            Event event;
+            event.m_type = Platform::keyboardBrightnessChanged;
+            dispatchEvent( event ); // Prompts UI to call getKeyboardBrightness() to retrieve and save to configuration store.
+        }
+
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Done reading keyboard brightness==" );
+#endif
+
+        m_readKeyboardBrightnessSent = false;
+        m_keyboardBrightnessQueryTimer->reset();
+    }
+
+    if( !m_readSensorsSent &&
+        ( m_sensorsQueryTimer->ms() >= sensorsQueryPeriod ) &&
+        !m_spiRequester.busy() )
+    {
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Reading sensors==" );
+#endif
         m_spiRequester.sendRequest( SPIReadSensors,
                                     nullptr,
                                     0 );
-        m_blockingQueryTimer->reset();
-        while( m_blockingQueryTimer->ms() < sensorsWaitTime ) {}
+        m_readSensorsSent = true;
+        m_sensorsQueryTimer->reset();
+    }
+
+    if( m_readSensorsSent &&
+        ( m_sensorsQueryTimer->ms() >= waitTime ) )
+    {
         char response[maxSPIPayloadLength];
         int responseLength( m_spiRequester.readResponse( response ) );
+
         if( responseLength == 4 )
         {
+#ifdef LOG_SPI
+            LOG_DEBUG( "Decoding sensors" );
+#endif
             unsigned short rawAmbientSensorValue( 0 );
             ::memcpy( &rawAmbientSensorValue, &response[0], 2 );
             m_ambientSensorValue = rawAmbientSensorValue;
             unsigned short rawLidSensorValue( 0 );
             ::memcpy( &rawLidSensorValue, &response[2], 2 );
             m_lidSensorValue = rawLidSensorValue;
+
+            // TODO: Send changed event?
         }
-        m_needReadSensors = false;
+
+#ifdef LOG_SPI
+        LOG_DEBUG( "==Done reading sensors==" );
+#endif
+
+        m_readSensorsSent = false;
+        m_sensorsQueryTimer->reset();
     }
 }
 
