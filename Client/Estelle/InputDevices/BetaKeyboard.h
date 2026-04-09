@@ -3,6 +3,7 @@
 
 #include "InputDevices/InputDevice.h"
 #include "Utils/RingBuffer.h"
+#include "InterruptHandler.h"
 
 namespace Agape
 {
@@ -17,19 +18,23 @@ class Timer;
 namespace InputDevices
 {
 
-class BetaKeyboard : public InputDevice
+class BetaKeyboard : public InputDevice, public InterruptHandler
 {
 public:
     BetaKeyboard( Timers::Factory& timerFactory );
     ~BetaKeyboard();
 
-    virtual bool eof();
+    virtual bool eof() const;
     virtual char peek();
     virtual char get();
 
     virtual void run();
 
     bool escHeld();
+    void prepareEscSleep();
+    void afterEscSleep();
+
+    virtual void handleInterrupt( enum InterruptDispatcher::InterruptVector vector );
 
 private:
     int m_curRow;

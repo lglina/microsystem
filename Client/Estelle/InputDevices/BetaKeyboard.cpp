@@ -3,6 +3,7 @@
 #include "Timers/Timer.h"
 #include "Utils/LiteStream.h"
 #include "BetaKeyboard.h"
+#include "InterruptHandler.h"
 
 #include <xc.h>
 
@@ -69,17 +70,20 @@ BetaKeyboard::BetaKeyboard( Timers::Factory& timerFactory ) :
   m_escHeld( false ),
   m_buffer( 8 )
 {
+    Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::CNA, this );
 }
 
 BetaKeyboard::~BetaKeyboard()
 {
+    Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::CNA );
+
     delete( m_shiftTimer );
     delete( m_ctrlTimer );
     delete( m_escTimer );
     delete( m_keyTimer );
 }
 
-bool BetaKeyboard::eof()
+bool BetaKeyboard::eof() const
 {
     return m_buffer.isEmpty();
 }
@@ -276,6 +280,38 @@ bool BetaKeyboard::escHeld()
     }
     
     return false;
+}
+
+void BetaKeyboard::prepareEscSleep()
+{
+    // Assume LATA[8] = 0 and CNPUA[0] = 1.
+    TRISA = 0xFEFF;
+
+    __builtin_disable_interrupts();
+    CNCONAbits.ON = 1;
+    CNFAbits.CNFA0 = 0; // Clear previously detected edge.
+    IFS0bits.CNAIF = 0;
+    CNCONAbits.CNSTYLE = 1; // < Edge detect mode.
+    CNEN1Abits.CNIE1A0 = 1; // \ Detect negative-going edge.
+    CNEN0Abits.CNIE0A0 = 0; // / (Esc closes A0 pulled-up input to A8 at GND.)
+    IEC0bits.CNAIE = 1;
+    __builtin_enable_interrupts();
+}
+
+void BetaKeyboard::afterEscSleep()
+{
+    __builtin_disable_interrupts();
+    CNFAbits.CNFA0 = 0; // Clear previously detected edge.
+    IFS0bits.CNAIF = 0;
+    IEC0bits.CNAIE = 0;
+    __builtin_enable_interrupts();
+}
+
+void BetaKeyboard::handleInterrupt( enum InterruptDispatcher::InterruptVector vector )
+{
+    // This is a NOP - 
+    CNFAbits.CNFA0 = 0; // Clear previously detected edge.
+    IFS0bits.CNAIF = 0;
 }
 
 } // namespace InputDevices
