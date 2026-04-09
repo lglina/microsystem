@@ -2819,10 +2819,10 @@ void Compositor::collideItem( const SceneRequest& request )
         TupleRouter::setDestinationActor( tuple, collidedItem->snowflake() );
         TupleRouter::setDestinationID( tuple, m_tupleRouter.myID() );
         TupleRouter::setTupleType( tuple, _Crash );
-        tuple[_id] = collidedItem->snowflake();
-        tuple[_name] = collidedItem->assetName();
-        tuple[_row] = collidedItem->row();
-        tuple[_column] = collidedItem->col();
+        tuple[_id] = sceneItem.snowflake();
+        tuple[_name] = sceneItem.assetName();
+        tuple[_row] = sceneItem.row();
+        tuple[_column] = sceneItem.col();
         tuple[_computerid] = !request.m_originatorID.empty() ? request.m_originatorID : m_tupleRouter.myID();
         tuple[_keyboard] = ( request.m_keyboard ) ? 1 : 0;
         request.m_direction.toValue( tuple[_direction] );
