@@ -12,6 +12,7 @@ class Illumination : public Runnable, public PowerControllable, public SPIRespon
 {
 public:
     Illumination();
+    ~Illumination();
 
     virtual void run();
 

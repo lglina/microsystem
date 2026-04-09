@@ -4,17 +4,31 @@
 
 #include <xc.h>
 
+namespace
+{
+    const int period = 8000;
+    const int defaultValue = 2000;
+    const int step = 1000;
+} // Anonymous namespace
+
 namespace Agape
 {
 
 Illumination::Illumination()
 {
-    CCP1CON1bits.MOD = 0x05;
-    CCP1CON2bits.OCAEN = 0;
+    CCP1CON1bits.MOD = 0x05; // Dual Edge Compare mode, buffered.
+    CCP1CON2bits.OCAEN = 0; // Disable A output, which is enabled by default.
     CCP1CON2bits.OCDEN = 1; // Enable D output.
-    CCP1PR = 8000; // Period.
+    CCP1PR = period;
     CCP1RA = 0;
-    CCP1RB = 2000;
+    CCP1RB = defaultValue;
+
+    setPowerState( PowerState::off );
+}
+
+Illumination::~Illumination()
+{
+    setPowerState( PowerState::off );
 }
 
 void Illumination::run()
@@ -39,18 +53,47 @@ int Illumination::spiResponse( char requestType,
                                char* response,
                                int maxResponseLength )
 {
-    if( requestType == SPISetIllumination )
+    int responseLength( 0 );
+
+    if( requestType == SPISetIlluminationUp )
+    {
+        if( CCP1RB <= ( period - step ) )
+        {
+            CCP1RB += step;
+        }
+        //responseLength = 0;
+    }
+    else if( requestType == SPISetIlluminationDown )
+    {
+        if( CCP1RB >= step )
+        {
+            CCP1RB -= step;
+        }
+        //responseLength = 0;
+    }
+    else if( requestType == SPIReadIllumination )
+    {
+        response[0] = CCP1RB & 0xFF;
+        response[1] = ( CCP1RB >> 8 ) & 0xFF;
+        responseLength = 2;
+    }
+    else if( requestType == SPISetIllumination )
     {
         if( requestLength == 2 )
         {
-            int count = *( (unsigned char*)request );
-            count += ( *( (unsigned char*)( request + 1 ) ) ) << 8;
-            response[0] = 0x00;
-            return 1;
+            int value( 0 );
+            value = *( (unsigned char*)request );
+            value += ( (int)*( (unsigned char*)( request + 1 ) ) ) << 8;
+
+            if( ( value > 0 ) && ( value <= period ) ) // Should always be > 0, but check anyway!
+            {
+                CCP1RB = value;
+            }
         }
+        //responseLength = 0;
     }
 
-    return 0;
+    return responseLength;
 }
 
 } // namespace Agape
