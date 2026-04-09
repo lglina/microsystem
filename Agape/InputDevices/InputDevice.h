@@ -20,8 +20,7 @@ class InputDevice : public Runnable
 
 public:
     // FIXME: Need to make this more like ReadableWritable?
-    // Some input devices can't peek the buffer, so eof() can't be const :(
-    virtual bool eof() = 0;
+    virtual bool eof() const = 0;
     virtual char peek() = 0;
     virtual char get() = 0;
 };

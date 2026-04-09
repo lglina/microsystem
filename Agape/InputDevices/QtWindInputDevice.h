@@ -17,7 +17,7 @@ class QtWind : public InputDevice
     Q_OBJECT
 
 public:
-    virtual bool eof();
+    virtual bool eof() const;
     virtual char peek();
     virtual char get();
 

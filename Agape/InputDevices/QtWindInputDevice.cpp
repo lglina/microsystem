@@ -124,7 +124,7 @@ void QtWind::consumeKeyPress( QKeyEvent* event )
     }
 }
 
-bool QtWind::eof()
+bool QtWind::eof() const
 {
     return m_buffer.empty();
 }
