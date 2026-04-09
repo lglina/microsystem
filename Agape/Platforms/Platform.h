@@ -5,6 +5,8 @@
 #include "Runnable.h"
 #include "String.h"
 
+#include <limits.h>
+
 namespace Agape
 {
 
@@ -13,9 +15,12 @@ class Platform
 public:
     enum EventType
     {
+        bootCompleted,
         hotPlugAttach,
         hotPlugDetach,
-        powerStateChanged
+        powerStateChanged,
+        screenBrightnessChanged,
+        keyboardBrightnessChanged
     };
 
     enum ErrorType
@@ -84,6 +89,7 @@ public:
     virtual void performSelfTest() = 0;
 
     virtual void doBootTasks() = 0;
+    void doBootCompleted();
 
     virtual bool error() = 0;
     virtual void currentErrors( Vector< enum ErrorType >& errors ) = 0;
@@ -96,11 +102,15 @@ public:
 
     virtual struct PowerState powerState() = 0;
 
-    virtual void brightnessUp() {};
-    virtual void brightnessDown() {};
+    virtual void screenBrightnessUp() {};
+    virtual void screenBrightnessDown() {};
+    virtual int getScreenBrightness() { return 0; };
+    virtual void setScreenBrightness( int brightness ) {};
 
     virtual void keyboardBrightnessUp() {};
     virtual void keyboardBrightnessDown() {};
+    virtual int getKeyboardBrightness() { return 0; };
+    virtual void setKeyboardBrightness( int brightness ) {};
 
     virtual void notify( enum NotifyType type, enum NotifySource source ) {};
     virtual void cancelNotify( enum NotifyType type ) {};
@@ -108,6 +118,11 @@ public:
     virtual void readSensors( char* data, int maxLength ) {};
 
     virtual String internalState() { return String(); };
+
+    //virtual int buildNumber() { return INT_MAX; }; // i.e. never update.
+    virtual int buildNumber() { return 0; }; // For testing.
+
+    virtual void reset() {};
 
     virtual void run() = 0;
 
