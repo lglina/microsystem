@@ -12,6 +12,7 @@ namespace Timers
 class Factory;
 } // namespace Timers
 
+class PICADC;
 class Timer;
 
 class BatteryMonitor : public SPIResponseSource, public Runnable
@@ -27,7 +28,7 @@ public:
         battError
     };
 
-    BatteryMonitor( Timers::Factory& timerFactory );
+    BatteryMonitor( PICADC& picADC, Timers::Factory& timerFactory );
     ~BatteryMonitor();
 
     virtual int spiResponse( char requestType,
@@ -39,13 +40,7 @@ public:
     virtual void run();
 
 private:
-    enum Input
-    {
-        voltage,
-        current
-    };
-
-    void doSample();
+    bool doSample();
     void doMonitor();
 
     bool dataValid();
@@ -62,6 +57,8 @@ private:
     void integrateCurrent();
     void estimateCharge();
 
+    PICADC& m_picADC;
+
     Timer* m_sampleTimer;
     Timer* m_pendingTimer;
     Timer* m_validTimer;
@@ -75,10 +72,6 @@ private:
     
     int m_voltageSampleIdx;
     int m_currentSampleIdx;
-
-    bool m_allSampled;
-
-    enum Input m_input;
 
     int m_debugCount;
 };

@@ -3,6 +3,7 @@
 #include "Timers/Timer.h"
 #include "Utils/LiteStream.h"
 #include "BatteryMonitor.h"
+#include "PICADC.h"
 #include "SPIRequests.h"
 
 #include <math.h>
@@ -30,6 +31,9 @@ Discharging (integrate current, SoC decreasing):
 
 namespace
 {
+    const int channelBatteryCurrent( 10 );
+    const int channelBatteryVoltage( 9 );
+
     const int numSamples( 50 ); // Must match array dimensions in header.
     const int sampleInterval( 50 ); // ms
     const int samplesPerHour( 60 * 60 * ( 1000 / ( sampleInterval * 2 ) ) );
@@ -67,7 +71,8 @@ namespace
 namespace Agape
 {
 
-BatteryMonitor::BatteryMonitor( Timers::Factory& timerFactory ) :
+BatteryMonitor::BatteryMonitor( PICADC& picADC, Timers::Factory& timerFactory ) :
+  m_picADC( picADC ),
   m_sampleTimer( timerFactory.makeTimer() ),
   m_pendingTimer( timerFactory.makeTimer() ),
   m_validTimer( timerFactory.makeTimer() ),
@@ -75,20 +80,13 @@ BatteryMonitor::BatteryMonitor( Timers::Factory& timerFactory ) :
   m_charge( 0 ),
   m_voltageSampleIdx( 0 ),
   m_currentSampleIdx( 0 ),
-  m_allSampled( false ),
-  m_input( voltage ),
   m_debugCount( 0 )
 {
     ::memset( m_rawVoltageSamples, 0, sizeof( int ) * numSamples );
     ::memset( m_rawCurrentSamples, 0, sizeof( int ) * numSamples );
 
-    AD1CON3bits.ADCS = 8; // No divider needed for TAD >= 200ns for 10-bit mode, per DS param AD50A.
-    AD1CHSbits.CH0SA = 9; // AN9 = battery voltage.
-    AD1CON1bits.ON = 1;
-    AD1CON1bits.SAMP = 1; // Start sampling
-
-    // FIXME: We could set 12 bit resolution here, but need to be mindful of
-    // the silicon errata applicable to 12-bit mode.
+    m_picADC.addChannel( channelBatteryCurrent );
+    m_picADC.addChannel( channelBatteryVoltage );
 }
 
 BatteryMonitor::~BatteryMonitor()
@@ -154,50 +152,30 @@ void BatteryMonitor::run()
     {
         m_sampleTimer->reset();
 
-        doSample();
-
-        if( m_allSampled )
+        if( doSample() )
         {
             doMonitor();
-            m_allSampled = false;
         }
     }
 }
 
-void BatteryMonitor::doSample()
+bool BatteryMonitor::doSample()
 {
-    AD1CON1bits.DONE = 0;
-    AD1CON1bits.SAMP = 0; // Start conversion
-    while( ( AD1CON1bits.DONE == 0 ) && ( m_sampleTimer->ms() < 10 ) ) {} // Wait for conversion to complete
-
-    if( AD1CON1bits.DONE == 1 )
+    int voltageSample( 0 );
+    int currentSample( 0 );
+    if( m_picADC.getValue( channelBatteryVoltage, voltageSample ) &&
+        m_picADC.getValue( channelBatteryCurrent, currentSample ) )
     {
-        if( m_input == voltage )
-        {
-            ++m_voltageSampleIdx; if( m_voltageSampleIdx == numSamples ) m_voltageSampleIdx = 0;
-            m_rawVoltageSamples[m_voltageSampleIdx] = ADC1BUF0;
-            
-            // Select next input
-            AD1CHSbits.CH0SA = 10; // AN10 = battery current.
-            m_input = current;
-        }
-        else
-        {
-            ++m_currentSampleIdx; if( m_currentSampleIdx == numSamples ) m_currentSampleIdx = 0;
-            m_rawCurrentSamples[m_currentSampleIdx] = ADC1BUF0;
+        ++m_voltageSampleIdx; if( m_voltageSampleIdx == numSamples ) m_voltageSampleIdx = 0;
+        m_rawVoltageSamples[m_voltageSampleIdx] = voltageSample;
 
-            // Select next input
-            AD1CHSbits.CH0SA = 9; // AN9 = battery voltage.
-            m_input = voltage;
-            m_allSampled = true;
-        }
-    }
-    else
-    {
-        LOG_DEBUG( "ADC conversion timed out!" );
+        ++m_currentSampleIdx; if( m_currentSampleIdx == numSamples ) m_currentSampleIdx = 0;
+        m_rawCurrentSamples[m_currentSampleIdx] = currentSample;
+
+        return true;
     }
 
-    AD1CON1bits.SAMP = 1; // Start sampling next
+    return false;
 }
 
 void BatteryMonitor::doMonitor()
