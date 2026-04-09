@@ -7,24 +7,30 @@ KIAMA_DIR=$(abspath ../KiamaFS)
 LINDA2_DIR=$(abspath ../Linda2)
 VPATH=$(AGAPE_DIR) $(ANSI_EDITOR_DIR) $(CARLO_DIR) $(EDITOR_DIR) $(KIAMA_DIR) $(LINDA2_DIR)
 XC32BIN=/opt/microchip/xc32/v4.45/bin
+MPLABXBIN=/opt/microchip/mplabx/v6.20/mplab_platform/bin
+HEX2BIN=../../Hex2bin-2.5
 DEFINES=-DLOG_TUPLES_BRIEF
 #DEFINES=-DKIAMA_DEBUG -DLOG_LOADERS
+#DEFINES=-DLOG_TUPLES_BRIEF -DLOG_SPI
 
 CXX=$(XC32BIN)/xc32-g++
-CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps=obj -O0 -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
+CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections -save-temps=obj -T p32MZ2048EFG064.ld -mmicromips -O0 -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
+#CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections -save-temps=obj -mmicromips -O0 -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MX470F512H -mmalloc-variant=binned -mips16 -g $(DEFINES) -I. -I$(AGAPE_DIR) -I$(ANSI_EDITOR_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(ESTELLE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=110000,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions -fno-rtti
 #CXXFLAGS=-mprocessor=32MX470F512H -mips16 -g -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=100000,--defsym=_DEBUGGER=1,--report-mem -fno-common -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CXXFLAGS=-mprocessor=32MX170F256B -mips16 -I. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=32768,--report-mem -ffunction-sections -fdata-sections -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 
 CC=$(XC32BIN)/xc32-gcc
-CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections,--print-gc-sections -save-temps=obj -O0 -Wl,-Map,mapfile.map -fno-exceptions
+CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections -save-temps=obj -T p32MZ2048EFG064.ld -mmicromips -O0 -Wl,-Map,mapfile.map -fno-exceptions
+#CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -Wl,--gc-sections -save-temps=obj -mmicromips -O0 -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MZ2048EFG064 -mmalloc-variant=binned -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=262144,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MX470F512H -mmalloc-variant=binned -mips16 -g -std=c99 $(DEFINES) -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=110000,--defsym=_DEBUGGER=1,--report-mem -ffunction-sections -fdata-sections -fno-common -flto -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MX470F512H -mips16 -g -std=c99 -I. -I$(AGAPE_DIR) -I$(CARLO_DIR) -I$(EDITOR_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=100000,--defsym=_DEBUGGER=1,--report-mem -fno-common -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 #CFLAGS=-mprocessor=32MX170F256B -mips16 -std=c99 -I. -I$(AGAPE_DIR) -I$(KIAMA_DIR) -I$(LINDA2_DIR) -Wl,--defsym=_min_heap_size=32768,--report-mem -ffunction-sections -fdata-sections -Wl,--gc-sections,--print-gc-sections -save-temps -Os -Wl,-Map,mapfile.map -fno-exceptions
 
 BIN2HEX=$(XC32BIN)/xc32-bin2hex
+HEXMATE=$(MPLABXBIN)/hexmate
 
 SOURCES=Actors/Linda2Actor.cpp \
         Actors/NativeActors/NativeActor.cpp \
@@ -58,6 +64,7 @@ SOURCES=Actors/Linda2Actor.cpp \
 		Encryptors/Utils/BIP39/Mnemonic.cpp \
 		Encryptors/Utils/BIP39/TextSquasher.cpp \
 		Encryptors/Utils/SecureIdentifier.cpp \
+		EntropySources/PIC32EntropySource.cpp \
 		EntropySources/SPIEntropySource.cpp \
 		Expressions/ArithmeticExpression.cpp \
 		Expressions/ComparisonExpression.cpp \
@@ -159,6 +166,7 @@ SOURCES=Actors/Linda2Actor.cpp \
 		UI/Strategies/TelegramStrategy.cpp \
 		UI/Strategies/TeleportStrategy.cpp \
 		UI/Strategies/TestStrategy.cpp \
+		UI/Strategies/UpdateStrategy.cpp \
 		UI/Strategies/WalkStrategy.cpp \
 		UI/Strategies/WoodStrategy.cpp \
 		UI/Strategies/WorldbookStrategy.cpp \
@@ -232,6 +240,7 @@ SOURCES=Actors/Linda2Actor.cpp \
 		SPIRequester.cpp \
 		String.cpp \
 		StringConstants.cpp \
+                StringSerialiser.cpp \
 		SyntaxTreeNode.cpp \
 		Session.cpp \
 		Terminal.cpp \
@@ -241,6 +250,7 @@ SOURCES=Actors/Linda2Actor.cpp \
 		TupleRouter.cpp \
 		TupleRoutingCriteria.cpp \
 		Value.cpp \
+		Version.cpp \
 		Warp.cpp \
 		WindowManager.cpp \
 		Worldbook.cpp \
@@ -259,6 +269,11 @@ DEPS:=$(patsubst %,build/%,$(patsubst %.cpp,%.d,$(SOURCES))) \
 
 EXECUTABLE=agape
 HEXFILE=$(EXECUTABLE).hex
+BOOTLOADERHEXFILE=../Caliga/caliga.hex
+MERGEDHEXFILE=$(EXECUTABLE)-merged.hex
+UPDATEHEXFILE=$(EXECUTABLE)-update.hex
+UPDATELOGFILE=$(EXECUTABLE)-update.hxl
+UPDATEBINFILE=$(EXECUTABLE)-update.bin
 
 all: $(EXECUTABLE) $(HEXFILE)
 
@@ -267,6 +282,13 @@ $(EXECUTABLE): $(OBJECTS)
 
 $(HEXFILE): $(EXECUTABLE)
 	$(BIN2HEX) $(EXECUTABLE)
+
+merged: $(HEXFILE)
+	$(HEXMATE) $(HEXFILE) $(BOOTLOADERHEXFILE) -o$(MERGEDHEXFILE)
+
+update: $(HEXFILE)
+	$(HEXMATE) $(HEXFILE) -FILL=0xFFFF@0x1D000000:0x1D1FFFFD -ADDRESSING=1 -CK=1D000000-1D1FFFFD@1D1FFFFE+FFFFw-2g5p1021 -O$(UPDATEHEXFILE) -LOGFILE=$(UPDATELOGFILE)
+	$(HEX2BIN)/hex2bin $(UPDATEHEXFILE)
 
 build/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -294,7 +316,7 @@ build/%.d: %.c
 
 .PHONY: clean
 clean:
-	rm -rf build/ $(EXECUTABLE) $(HEXFILE) *.o *.s *.map
+	rm -rf build/ $(EXECUTABLE) $(HEXFILE) $(MERGEDHEXFILE) $(UPDATEHEXFILE) $(UPDATELOGFILE) $(UPDATEBINFILE) *.o *.s *.map
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
