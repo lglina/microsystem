@@ -33,6 +33,7 @@ SOURCES=EntropySources/EstelleEntropySource.cpp \
 		Illumination.cpp \
 		InterruptHandler.cpp \
 		main.cpp \
+		PICADC.cpp \
 		PICSerial.cpp \
 		PlatformController.cpp \
 		ReadableWritable.cpp \
