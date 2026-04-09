@@ -77,15 +77,19 @@ void Linda2Responder::load( const Tuple& tuple )
     String recipientSnowflake = tuple[_recipientSnowflake];
     TelegramLoader* telegramLoader( m_telegramLoaderFactory.makeLoader( recipientSnowflake ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramLoadRequest for "
            << recipientSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     Vector< Telegram > telegrams;
     bool success( telegramLoader->load( telegrams ) );
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramLoadSummary" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
@@ -98,7 +102,9 @@ void Linda2Responder::load( const Tuple& tuple )
     Vector< Telegram >::const_iterator it( telegrams.begin() );
     for( ; success && ( it != telegrams.end() ); ++it )
     {
+#ifdef LOG_LOADERS
         LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramLoadResponse" );
+#endif
         Tuple telegramTuple;
         TupleRouter::setSourceActor( telegramTuple, _TelegramLoaderResponder );
         TupleRouter::setSourceID( telegramTuple, m_tupleRouter.myID() );
@@ -116,15 +122,19 @@ void Linda2Responder::loadSent( const Tuple& tuple )
     String recipientSnowflake = tuple[_recipientSnowflake];
     TelegramLoader* telegramLoader( m_telegramLoaderFactory.makeLoader( recipientSnowflake ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramLoadSentRequest for "
            << recipientSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     Vector< Telegram > telegrams;
     bool success( telegramLoader->loadSent( telegrams ) );
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramLoadSentSummary" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
@@ -137,7 +147,9 @@ void Linda2Responder::loadSent( const Tuple& tuple )
     Vector< Telegram >::const_iterator it( telegrams.begin() );
     for( ; success && ( it != telegrams.end() ); ++it )
     {
+#ifdef LOG_LOADERS
         LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramLoadSentResponse" );
+#endif
         Tuple telegramTuple;
         TupleRouter::setSourceActor( telegramTuple, _TelegramLoaderResponder );
         TupleRouter::setSourceID( telegramTuple, m_tupleRouter.myID() );
@@ -157,14 +169,18 @@ void Linda2Responder::send( const Tuple& tuple )
 
     Telegram telegram( Telegram::fromValue( tuple[_telegram] ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramSendRequest from "
            << telegram.m_senderSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     bool success( telegramLoader->send( telegram ) );
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramSendResponse" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
@@ -181,14 +197,18 @@ void Linda2Responder::markRead( const Tuple& tuple )
 
     Telegram telegram( Telegram::fromValue( tuple[_telegram] ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramMarkReadRequest for "
            << telegram.m_telegramSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     bool success( telegramLoader->markRead( telegram ) );
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramMakReadResponse" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
@@ -205,14 +225,18 @@ void Linda2Responder::erase( const Tuple& tuple )
 
     Telegram telegram( Telegram::fromValue( tuple[_telegram] ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramEraseRequest for "
            << telegram.m_telegramSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     bool success( telegramLoader->erase( telegram ) );
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramEraseResponse" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
@@ -228,10 +252,12 @@ void Linda2Responder::unread( const Tuple& tuple )
     bool allDevices = ( (int)tuple[_allDevices] == 1 );
     TelegramLoader* telegramLoader( m_telegramLoaderFactory.makeLoader( recipientSnowflake ) );
 
+#ifdef LOG_LOADERS
     LiteStream stream;
     stream << "Linda2TelegramLoaderResponder: Received TelegramUnreadRequest for "
            << recipientSnowflake;
     LOG_DEBUG( stream.str() );
+#endif
 
     Map< String, int > numUnread;
     bool success( telegramLoader->unread( numUnread, allDevices) );
@@ -243,7 +269,9 @@ void Linda2Responder::unread( const Tuple& tuple )
         numUnreadValue[it->first] = it->second;
     }
 
+#ifdef LOG_LOADERS
     LOG_DEBUG( "Linda2TelegramLoaderResponder: Sending TelegramUnreadResponse" );
+#endif
     Tuple response;
     TupleRouter::setSourceActor( response, _TelegramLoaderResponder );
     TupleRouter::setSourceID( response, m_tupleRouter.myID() );
