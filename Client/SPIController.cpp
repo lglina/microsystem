@@ -32,7 +32,6 @@ SPIController::SPIController( int peripheral,
 {
     if( peripheral == 1 )
     {
-        setOn( false );
         if( master )
         {
             SPI1CONbits.MSTEN = 1;
@@ -48,8 +47,15 @@ SPIController::SPIController( int peripheral,
         SPI1CONbits.STXISEL = 0x03; // TXIF when TX buffer not full. Most conservative, but more interrupts.
         SPI1CONbits.SRXISEL = 0x01; // RXIF when RX buffer not empty. Most conservative, but more interrupts.
         SPI1BRG = ( PBCLK_FREQ / clockSpeed / 2 ) - 1;
-        if( master ) setOn( true );
-        setRXIE();
+
+#if defined(__PIC32MX__)
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1, this );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Tx, this );
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Rx, this );
+#endif
+
+        setPowerState( master ? PowerState::on : PowerState::off );
     }
     else if( peripheral == 2 )
     {
@@ -69,13 +75,41 @@ SPIController::SPIController( int peripheral,
         SPI2CONbits.STXISEL = 0x03; // TXIF when TX buffer not full. Most conservative, but more interrupts.
         SPI2CONbits.SRXISEL = 0x01; // RXIF when RX buffer not empty. Most conservative, but more interrupts.
         SPI2BRG = ( PBCLK_FREQ / clockSpeed / 2 ) - 1;
-        if( master ) setOn( true );
-        setRXIE();
+
+#if defined(__PIC32MX__)
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI2, this );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI2Tx, this );
+        InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI2Rx, this );
+#endif
+
+        setPowerState( master ? PowerState::on : PowerState::off );
     }
 }
 
 SPIController::~SPIController()
 {
+    setPowerState( PowerState::off );
+
+    if( m_peripheral == 1 )
+    {
+#if defined(__PIC32MX__)
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI1 );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI1Tx );
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI1Rx );
+#endif
+    }
+    else if( m_peripheral == 2 )
+    {
+#if defined(__PIC32MX__)
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI2 );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI2Tx );
+        InterruptDispatcher::instance()->deregisterHandler( InterruptDispatcher::SPI2Rx );
+#endif
+    }
+
     delete( m_timer );
 }
 
