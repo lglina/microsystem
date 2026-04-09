@@ -33,10 +33,13 @@ public:
     virtual int write( const char* data, int len ) = 0;
     virtual bool error() { return false; } // TODO: Return errors?
 
-    virtual void setLinkAddress( const String& number ) {}
+    virtual void setLinkAddress( const String& number ) {};
     virtual bool linkReady() { return false; };
 
-    virtual void run() {}
+    virtual bool dataCarrierDetect() { return false; };
+    virtual void dataTerminalReady( bool ready ) {};
+
+    virtual void run() {};
 };
 
 } // namespace Agape
