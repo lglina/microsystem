@@ -81,6 +81,7 @@ void Splash::enter( const Value& parameters )
 
     m_platform.performSelfTest();
     m_platform.doBootTasks();
+    m_platform.doBootCompleted();
 
     m_nextStrategy.clear();
 
