@@ -1,6 +1,9 @@
 #pragma config JTAGEN = OFF
 #pragma config FWDTEN = OFF, SOSCSEL = ON, SOSCEN = OFF, FNOSC = 0
-#pragma config FCKSM = 1, PLLSRC = 1
+#pragma config FCKSM = CSDCMD, PLLSRC = 1
+#pragma config BOREN = BOR0
+#pragma config LPBOREN = OFF
+#pragma config RETVR = ON // 0
 // FNOSC = 0 selects Fast RC oscillator (FRC).
 
 #include "Loggers/Logger.h"
@@ -77,15 +80,16 @@ int main( int argc, char** argv )
     IPC14bits.U2RXIP = 1;
     IPC10bits.SPI1TXIP = 1;
     IPC10bits.SPI1RXIP = 1;
+    IPC2bits.CNAIP = 1;
 
     PICSerial serial( 2, 115200, 256, 8 );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::UART2Tx, &serial );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::UART2Rx, &serial );
     Logger::setInstance( new Loggers::Serial( serial ) );
 #endif
 
+    // Enable for 24 MHz PLL operation. Also change cpu.h.
+    // Set FCKSM = CSECMD
     /*
-    SPLLCONbits.PLLMULT = 0;
+    SPLLCONbits.PLLMULT = 1;
     SPLLCONbits.PLLODIV = 0;
 
     SYSKEY = 0x00000000;
