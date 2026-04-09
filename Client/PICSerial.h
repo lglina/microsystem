@@ -18,6 +18,7 @@ public:
                int receiveBufferSize = 1024,
                bool flowControl = false,
                bool debug = false );
+    ~PICSerial();
 
     virtual int read( char* data, int len );
     virtual int write( const char* data, int len );
@@ -25,6 +26,7 @@ public:
     virtual bool error();
 
     virtual void flushInput();
+    virtual void flushOutput();
 
     int write( const char datum );
 

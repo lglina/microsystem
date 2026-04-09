@@ -54,6 +54,13 @@ PICSerial::PICSerial( int port,
         U1STAbits.URXEN = 1;
         U1MODEbits.ON = 1;
 
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART1, this );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART1Tx, this );
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART1Rx, this );
+#endif
+
         setRXIE();
     }
     else if( port == 2 )
@@ -72,6 +79,13 @@ PICSerial::PICSerial( int port,
         U2STAbits.URXEN = 1;
         U2MODEbits.ON = 1;
 
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART2, this );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART2Tx, this );
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART2Rx, this );
+#endif
+
         setRXIE();
     }
     else if( port == 3 )
@@ -89,6 +103,13 @@ PICSerial::PICSerial( int port,
         U3STAbits.UTXEN = 1;
         U3STAbits.URXEN = 1;
         U3MODEbits.ON = 1;
+
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3, this );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3Tx, this );
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3Rx, this );
+#endif
 
         setRXIE();
     }
@@ -109,6 +130,13 @@ PICSerial::PICSerial( int port,
         U4STAbits.URXEN = 1;
         U4MODEbits.ON = 1;
 
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART4, this );
+#elif defined(__PIC32MZ__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART4Tx, this );
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART4Rx, this );
+#endif
+
         setRXIE();
     }
     else if( port == 5 )
@@ -127,9 +155,85 @@ PICSerial::PICSerial( int port,
         U5STAbits.URXEN = 1;
         U5MODEbits.ON = 1;
 
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART5, this );
+#elif defined(__PIC32MZ__)
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART5Tx, this );
+        Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART5Rx, this );
+#endif
+
         setRXIE();
     }
 #endif
+}
+
+PICSerial::~PICSerial()
+{
+    if( m_port == 1 )
+    {
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART1 );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART1Tx );
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART1Rx );
+#endif
+        U1STAbits.UTXEN = 0;
+        U1STAbits.URXEN = 0;
+        U1MODEbits.ON = 0;
+    }
+    else if( m_port == 2 )
+    {
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART2 );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART2Tx );
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART2Rx );
+#endif
+        U2STAbits.UTXEN = 0;
+        U2STAbits.URXEN = 0;
+        U2MODEbits.ON = 0;
+    }
+    else if( m_port == 3 )
+    {
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART3 );
+#elif defined(__PIC32MZ__) || defined(__PIC32MM__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART3Tx );
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART3Rx );
+#endif
+        U3STAbits.UTXEN = 0;
+        U3STAbits.URXEN = 0;
+        U3MODEbits.ON = 0;
+    }
+#if defined(__PIC32MZ__) || defined(__PIC32MX__)
+    else if( m_port == 4 )
+    {
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART4 );
+#elif defined(__PIC32MZ__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART4Tx );
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART4Rx );
+#endif
+        U4STAbits.UTXEN = 0;
+        U4STAbits.URXEN = 0;
+        U4MODEbits.ON = 0;
+    }
+    else if( m_port == 5 )
+    {
+#if defined(__PIC32MX__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART5 );
+#elif defined(__PIC32MZ__)
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART5Tx );
+        Agape::InterruptDispatcher::instance()->deregisterHandler( Agape::InterruptDispatcher::UART5Rx );
+#endif
+        U5STAbits.UTXEN = 0;
+        U5STAbits.URXEN = 0;
+        U5MODEbits.ON = 0;
+    }
+#endif
+
+    clearRXIE();
+    clearTXIE();
 }
 
 int PICSerial::read( char* data, int len )
@@ -192,6 +296,11 @@ bool PICSerial::error()
 void PICSerial::flushInput()
 {
     m_receiveBuffer.clear();
+}
+
+void PICSerial::flushOutput()
+{
+    while( !m_transmitBuffer.isEmpty() ) {}
 }
 
 int PICSerial::write( const char datum )
