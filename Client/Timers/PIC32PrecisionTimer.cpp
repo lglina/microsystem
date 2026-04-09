@@ -6,8 +6,11 @@
 namespace
 {
     const unsigned long ticksPerUS( PBCLK_FREQ / 1000000ul );
-    //const int constOffset( 70 ); // Ticks to subtract from delay times, accounting for all overheads.
-    const int constOffset( 0 ); // Ticks to subtract from delay times, accounting for all overheads.
+
+    // Ticks to subtract from delay times in usleep(), accounting for all
+    // overheads. This implies the minimum possible delay is 11.25 us at
+    // 8 MHz, or 2.8125 us at 32 MHz.
+    const int constOffset( 90 );
 } // Anonymous namespace
 
 namespace Agape
@@ -40,12 +43,23 @@ void PIC32Precision::reset()
 
 void PIC32Precision::usleep( long us )
 {
-    long ticks( us * ticksPerUS );
-    if( ticks > constOffset ) ticks -= constOffset; // FIXME: Need to verify fixed offset again at 8 and 32 MHz.
+    // Calculate sleep time.
+    long sleepTicks( us * ticksPerUS );
+    sleepTicks -= constOffset;
+    if( sleepTicks < 0 ) sleepTicks = 0;
+
+    // Save current ticks and reset.
+    long prevTicks = TMR3;
     T3CONbits.ON = 0;
     TMR3 = 0;
     T3CONbits.ON = 1;
-    while( TMR3 < ticks ) {}
+
+    while( TMR3 < sleepTicks ) {}
+
+    // Restore previous ticks.
+    T3CONbits.ON = 0;
+    TMR3 = prevTicks + sleepTicks;
+    T3CONbits.ON = 1;
 }
 
 } // namespace Timers
