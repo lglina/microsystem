@@ -20,7 +20,6 @@ Serial::Serial( PICSerial& picSerial ) :
 
 void Serial::log( const String& message, LogLevel logLevel )
 {
-    __builtin_disable_interrupts();
     // FIXME: Implement log levels via base class, which would call a
     // a differently-named derived class function?
     int lenWritten( -1 );
@@ -40,7 +39,6 @@ void Serial::log( const String& message, LogLevel logLevel )
     }
 
     m_picSerial.flushInput(); // In case we get any junk coming back from the monitoring PC...
-    __builtin_enable_interrupts();
 }
 
 } // namespace Loggers
