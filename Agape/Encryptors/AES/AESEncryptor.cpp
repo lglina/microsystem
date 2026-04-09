@@ -110,7 +110,7 @@ void AES::run()
 
 int AES::keySize()
 {
-    return AES_BLOCKLEN;
+    return AES_KEYLEN;
 }
 
 int AES::overhead()
