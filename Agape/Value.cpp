@@ -7,6 +7,7 @@
 #include "ReadableWritable.h"
 #include "String.h"
 #include "StringConstants.h"
+#include "StringSerialiser.h"
 #include "Value.h"
 
 #include <string.h>
@@ -17,7 +18,7 @@ namespace
     // deserialised, in case a connection breaks and the link layer doesn't
     // prevent us seeing corrupt/partial data.
     const int maxElements( 256 );
-    const int maxStringLength( 1024 );
+    const int maxStringLength( 4096 );
 } // Anonymous namespace
 
 namespace Agape
@@ -910,36 +911,6 @@ String Value::dump( int indent ) const
 #endif
 
     return s;
-}
-
-Value::StringSerialiser::StringSerialiser() :
-  m_offset( 0 )
-{
-}
-
-int Value::StringSerialiser::read( char* data, int len )
-{
-    if( ( m_offset + len ) <= m_data.length() )
-    {
-        ::memcpy( data, &m_data[m_offset], len );
-        m_offset += len;
-        return len;
-    }
-
-    return 0;
-}
-
-int Value::StringSerialiser::write( const char* data, int len )
-{
-    if( ( m_offset + len ) > m_data.length() ) m_data.resize( m_offset + len );
-    ::memcpy( &m_data[m_offset], data, len );
-    m_offset += len;
-    return len;
-}
-
-bool Value::StringSerialiser::error()
-{
-    return false;
 }
 
 char Value::valueTypeToChar( enum ValueType valueType )

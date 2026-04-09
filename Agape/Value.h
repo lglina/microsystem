@@ -119,18 +119,6 @@ public:
     String dump( int indent = 0 ) const;
 
 private:
-    class StringSerialiser : public ReadableWritable
-    {
-    public:
-        StringSerialiser();
-        virtual int read( char* data, int len );
-        virtual int write( const char* data, int len );
-        virtual bool error();
-
-        String m_data;
-        int m_offset;
-    };
-
     static char valueTypeToChar( enum ValueType valueType );
     static enum ValueType valueTypeFromChar( char c );
 
