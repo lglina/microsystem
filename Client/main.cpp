@@ -1,3 +1,7 @@
+// It is assumed that we will flash the config words at the same time as we
+// flash the bootloader. The config settings assumed here should be as per
+// those actually flashed.
+#if defined NO_BOOTLOADER
 #if defined(__32MX170F256B__) || defined(__32MX470F512H__)
 #pragma config JTAGEN = OFF
 #pragma config FWDTEN = OFF, FPBDIV = DIV_1, FSOSCEN = OFF, FNOSC = FRCPLL // FNOSC to FRC for PLL off, FRCPLL for PLL on.
@@ -9,6 +13,8 @@
 #pragma config FDMTEN = OFF, FWDTEN = OFF, FSOSCEN = OFF, FNOSC = SPLL // DEVCFG1
 #pragma config FPLLODIV = DIV_2, FPLLMULT = MUL_16, FPLLIDIV = DIV_2 // DEVCFG2
 #pragma config FUSBIDIO = OFF, IOL1WAY = OFF // DEVCFG3
+#pragma config BOOTISA=MICROMIPS
+#endif
 #endif
 
 #include "Timers/PIC32AbsoluteTimer.h"
@@ -33,7 +39,7 @@ int main( int argc, char** argv )
 {
     INTCONSET = _INTCON_MVEC_MASK;
 
-    OSCCONbits.COSC = 0x01;
+    OSCCONbits.COSC = 0x01; // Use SPLL
 
 #ifdef __32MX170F256B__
     TRISA = 0x0007;
@@ -97,14 +103,14 @@ int main( int argc, char** argv )
 
 #ifdef __32MZ2048EFG064__
     TRISB = 0x0000; // All outputs.
-    TRISC = 0x6000; // /DCD and /RI inputs.
+    TRISC = 0x2000; // /DCD input, /DTR output.
     TRISD = 0x0205; // /INT, SDI and /CTS inputs.
     TRISE = 0x0000; // PMP peripheral will control D7-D0 (RE7~RE0).
     TRISF = 0x0022; // RX and RX2 inputs.
     TRISG = 0x0000; // All outputs
 
     LATB = 0xC07C; // /CS.X1, /CS.X2, /CS.FLASH, /CS.ESTELLE, /RTS, /ALH, /ALL de-asserted.
-    LATC = 0x0000;
+    LATC = 0x4000; // /DTR de-asserted.
     LATD = 0x0030; // /WR and /RD de-asserted.
     LATE = 0x0000;
     LATF = 0x0000;
@@ -145,12 +151,9 @@ int main( int argc, char** argv )
 
 #if defined(__32MX470F512H__)
     PICSerial debugSerial( 2, 115200, 768, 16 );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::UART2, &debugSerial );
     Logger::setInstance( new Loggers::Serial( debugSerial ) );
 #elif defined(__32MZ2048EFG064__)
     PICSerial debugSerial( 5, 115200, 768, 16 );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::UART5Tx, &debugSerial );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::UART5Rx, &debugSerial );
     Logger::setInstance( new Loggers::Serial( debugSerial ) );
 #endif
     LOG_DEBUG( "Boopie starting" );
