@@ -69,6 +69,7 @@ private:
     void drawScanning();
     void drawNetwork();
     void drawPassword();
+    void drawEnterprisePassword();
     void drawPendingScan();
     void drawPendingConnect();
     void drawSuccess();
@@ -79,7 +80,9 @@ private:
 
     void deleteNetwork();
     void setNetwork();
+    bool isEnterprise();
     void setPassword();
+    void setEnterpriseCredentials();
     void connect();
 
     InputDevice& m_inputDevice;

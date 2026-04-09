@@ -7,6 +7,7 @@
 #include "UI/Forms/Form.h"
 #include "UI/Dialogue.h"
 #include "Utils/StrToHex.h"
+#include "Utils/Tokeniser.h"
 #include "Collections.h"
 #include "ConnectWiFi.h"
 #include "StrategyHelper.h"
@@ -40,7 +41,7 @@ namespace
     const char* settingsTextAssetName( "settings-text" );
 
     const int connectTimeout( 10000 ); // ms.
-    const int scanWaitTime( 2000 ); // ms.
+    const int scanWaitTime( 3000 ); // ms.
 } // Anonymous namespace
 
 namespace Agape
@@ -174,7 +175,15 @@ void ConnectWiFi::run()
                 setNetwork();
 
                 m_state = password;
-                drawPassword();
+
+                if( isEnterprise() )
+                {
+                    drawEnterprisePassword();
+                }
+                else
+                {
+                    drawPassword();
+                }
             }
             else if( c == 'r' )
             {
@@ -204,6 +213,7 @@ void ConnectWiFi::run()
         case password:
             if( c == '\n' )
             {
+                setEnterpriseCredentials();
                 setPassword();
 
                 m_state = pending;
@@ -215,8 +225,11 @@ void ConnectWiFi::run()
             }
             else if( c == '\x1b' )
             {
-                m_state = network;
-                drawNetwork();
+                // Will return to network list after scan complete.
+                m_state = scanning;
+                drawScanning();
+
+                m_timer->reset();
             }
             else if( m_currentForm != nullptr )
             {
@@ -442,6 +455,69 @@ void ConnectWiFi::drawPassword()
     }
 }
 
+void ConnectWiFi::drawEnterprisePassword()
+{
+    closeForm();
+    drawBackground();
+
+    const char* message( "Now enter your WiFi username and password. Move between fields using \x1b[97mTab\x1b[0m.\
+                          If your network administrator has provided an \"anonymous identity\" enter that as well,\
+                          otherwise leave it blank." );
+    const char* message2( "Hit \x1b[97mRet\x1b[0m and we'll get you connected! If you make a mistake, hit\
+                           \x1b[97mBs\x1b[0m. If you want to choose a different network, hit \x1b[97mEsc\x1b[0m." );
+
+    m_terminal->printFormatted( message,
+                                contentFirstRow,
+                                contentCol,
+                                Terminal::noMaxHeight,
+                                contentMaxWidth,
+                                Terminal::noHCentre,
+                                Terminal::noVCentre,
+                                contentAttributes,
+                                Terminal::preserveBackground );
+
+    m_terminal->printFormatted( message2,
+                                contentFirstRow + 4,
+                                contentCol,
+                                Terminal::noMaxHeight,
+                                contentMaxWidth,
+                                Terminal::noHCentre,
+                                Terminal::noVCentre,
+                                contentAttributes,
+                                Terminal::preserveBackground );
+
+    Vector< Forms::Field > fields;
+    fields.push_back( Forms::Field( _Username,
+                                    textWidth,
+                                    textHeight,
+                                    contentFirstRow + 7,
+                                    contentCol,
+                                    fieldAttributes,
+                                    labelAttributes ) );
+    fields.push_back( Forms::Field( _Password,
+                                    textWidth,
+                                    textHeight,
+                                    contentFirstRow + 10,
+                                    contentCol,
+                                    fieldAttributes,
+                                    labelAttributes ) );
+    fields.push_back( Forms::Field( __Identity,
+                                    textWidth,
+                                    textHeight,
+                                    contentFirstRow + 13,
+                                    contentCol,
+                                    fieldAttributes,
+                                    labelAttributes ) );
+
+    m_currentForm = new Forms::Form( m_windowManager, m_windowName, String(), fields, Forms::Title() );
+    m_currentForm->openUI();
+
+    if( m_currentForm->uiIsOpen() )
+    {
+        m_currentForm->draw();
+    }
+}
+
 void ConnectWiFi::drawPendingScan()
 {
     m_dialogue.show( Dialogue::normal );
@@ -506,11 +582,34 @@ void ConnectWiFi::setNetwork()
     }
 }
 
+bool ConnectWiFi::isEnterprise()
+{
+    if( m_currentForm != nullptr )
+    {
+        String networkName( m_currentForm->getFieldContents( _Network ) );
+        Tokeniser networkTokeniser( networkName, '\xFF' );
+        networkTokeniser.token();
+        String suffix( networkTokeniser.token() );
+        return !suffix.empty();
+    }
+
+    return false;
+}
+
 void ConnectWiFi::setPassword()
 {
     if( m_currentForm != nullptr )
     {
         m_line.setConfigOption( _Add_Access_Point_Password, strToHex( m_currentForm->getFieldContents( _Password ) ) );
+    }
+}
+
+void ConnectWiFi::setEnterpriseCredentials()
+{
+    if( m_currentForm != nullptr )
+    {
+        m_line.setConfigOption( _Add_Access_Point_Username, strToHex( m_currentForm->getFieldContents( _Username ) ) );
+        m_line.setConfigOption( _Add_Access_Point_Identity, strToHex( m_currentForm->getFieldContents( __Identity ) ) );
     }
 }
 
