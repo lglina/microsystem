@@ -3,15 +3,16 @@
 
 #include "UI/Strategy.h"
 #include "String.h"
+#include "Value.h"
 
 namespace Agape
 {
 
 class Dialogue;
 class InputDevice;
+class Line;
 class Phonebook;
 class Terminal;
-class Value;
 class WindowManager;
 
 namespace UI
@@ -32,6 +33,7 @@ public:
                const String& windowName,
                InputDevice& inputDevice,
                Agape::Phonebook& phonebook,
+               Line& line,
                Dialogue& dialogue );
 
     ~Phonebook();
@@ -48,7 +50,8 @@ private:
     enum State
     {
         select,
-        add
+        add,
+        connect
     };
 
     void drawBackground();
@@ -59,17 +62,22 @@ private:
 
     void addEntry();
     void deleteEntry();
+    String getSelectedEntryName();
     void setDefaultEntry();
 
     WindowManager& m_windowManager;
     String m_windowName;
     InputDevice& m_inputDevice;
     Agape::Phonebook& m_phonebook;
+    Line& m_line;
     Dialogue& m_dialogue;
 
     enum State m_state;
 
     bool m_completed;
+    bool m_calling;
+    Value m_callingParameters;
+    String m_nextStrategy;
 
     Forms::Form* m_currentForm;
 

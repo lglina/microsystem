@@ -1,4 +1,5 @@
 #include "InputDevices/InputDevice.h"
+#include "Lines/Line.h"
 #include "UI/Forms/Form.h"
 #include "UI/Dialogue.h"
 #include "Utils/Tokeniser.h"
@@ -35,7 +36,7 @@ namespace
     const int titleWidth( 50 );
     const int titleAttributes( 0x0F );
 
-    const int guideRow( 20 );
+    const int guideRow( 19 );
 
     const String textAssetName( "servers-text" );
 } // Anonymous namespace
@@ -53,14 +54,17 @@ Phonebook::Phonebook( WindowManager& windowManager,
                       const String& windowName,
                       InputDevice& inputDevice,
                       Agape::Phonebook& phonebook,
+                      Line& line,
                       Dialogue& dialogue ) :
   m_windowManager( windowManager ),
   m_windowName( windowName ),
   m_inputDevice( inputDevice ),
   m_phonebook( phonebook ),
+  m_line( line ),
   m_dialogue( dialogue ),
   m_state( select ),
   m_completed( false ),
+  m_calling( false ),
   m_currentForm( nullptr ),
   m_terminal( nullptr )
 {
@@ -85,10 +89,25 @@ void Phonebook::enter( const Value& parameters )
 
 void Phonebook::returnTo( const Value& parameters )
 {
+    if( m_state == connect )
+    {
+        m_state = select;
+        drawSelectForm();
+    }
+
+    m_calling = false;
 }
 
 bool Phonebook::calling( String& strategyName, Value& parameters )
 {
+    if( m_calling )
+    {
+        strategyName = m_nextStrategy;
+        parameters = m_callingParameters;
+
+        return true;
+    }
+
     return false;
 }
 
@@ -134,6 +153,24 @@ void Phonebook::run()
             else if( c == '\x1b' )
             {
                 m_completed = true;
+            }
+            else if( c == '\n' )
+            {
+                m_line.hangup(); // Ensure disconnected first.
+                Line::LineStatus lineStatus( m_line.getLineStatus() );
+                while( lineStatus.m_carrier )
+                {
+                    // FIXME: Timeout?
+                    lineStatus = m_line.getLineStatus();
+                }
+                m_state = connect;
+                m_nextStrategy = "connect";
+                m_callingParameters[_name] = getSelectedEntryName();
+                m_calling = true;
+            }
+            else if( c == 'h' )
+            {
+                m_line.hangup();
             }
             else if( m_currentForm != nullptr )
             {
@@ -208,7 +245,9 @@ void Phonebook::drawSelectForm()
                                     listLabelAttributes ) );
 
     m_terminal->consumeNext( guideRow, contentCol );
-    m_terminal->consumeString( "\x1b[0;97;100m\x18/\x19\x1b[37m Select\x1b[0m  \x1b[97;100mA\x1b[37m Add\x1b[0m  \x1b[97;100mX\x1b[37m Delete\x1b[0m  \x1b[97;100mD\x1b[37m Set default\x1b[0m  \x1b[97;100mEsc\x1b[37m Menu\x1b[0m", false, Terminal::preserveBackground );
+    m_terminal->consumeString( "\x1b[0;97;100m\x18/\x19\x1b[37m Select\x1b[0m   \x1b[97;100mA\x1b[37m Add\x1b[0m     \x1b[97;100mX\x1b[37m Delete\x1b[0m  \x1b[97;100mD\x1b[37m Set default\x1b[0m  \x1b[97;100mEsc\x1b[37m Menu\x1b[0m", false, Terminal::preserveBackground );
+    m_terminal->consumeNext( guideRow + 1, contentCol );
+    m_terminal->consumeString( "\x1b[0;97;100mRet\x1b[37m Dial now\x1b[0m \x1b[97;100mH\x1b[37m Hang up\x1b[0m", false, Terminal::preserveBackground );
 
     closeForm();
 
@@ -304,6 +343,23 @@ void Phonebook::deleteEntry()
             m_phonebook.remove( name );
         }
     }
+}
+
+String Phonebook::getSelectedEntryName()
+{
+    if( m_currentForm != nullptr )
+    {
+        String nameAndNumber( m_currentForm->getFieldContents( _Name ) );
+        if( !nameAndNumber.empty() )
+        {
+            Tokeniser entryTokeniser( nameAndNumber, '\304' );
+            String name( entryTokeniser.token() );
+            name.pop_back(); // Remove trailing space
+            return name;
+        }
+    }
+
+    return String();
 }
 
 void Phonebook::setDefaultEntry()
