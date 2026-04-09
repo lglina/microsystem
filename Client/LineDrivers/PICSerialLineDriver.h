@@ -7,31 +7,23 @@
 namespace Agape
 {
 
-namespace Timers
-{
-class Factory;
-} // namespace Timers
-
-class Timer;
-
 namespace LineDrivers
 {
 
 class PICSerial : public LineDriver
 {
 public:
-    PICSerial( Agape::PICSerial& picSerial, Timers::Factory& timerFactory );
-    virtual ~PICSerial();
+    PICSerial( Agape::PICSerial& picSerial );
 
     virtual int open();
     virtual int read( char* data, int len );
     virtual int write( const char* data, int len );
-    virtual bool error();
+
+    virtual bool dataCarrierDetect();
+    virtual void dataTerminalReady( bool ready );
 
 private:
     Agape::PICSerial& m_picSerial;
-
-    Timer* m_rxTimer;
 };
 
 } // namespace LineDrivers

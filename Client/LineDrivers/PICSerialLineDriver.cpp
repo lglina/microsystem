@@ -1,9 +1,9 @@
 #include "LineDrivers/PICSerialLineDriver.h"
 #include "Loggers/Logger.h"
-#include "Timers/Factories/TimerFactory.h"
-#include "Timers/Timer.h"
 #include "PICSerialLineDriver.h"
 #include "PICSerial.h"
+
+#include <xc.h>
 
 namespace
 {
@@ -16,34 +16,21 @@ namespace Agape
 namespace LineDrivers
 {
 
-PICSerial::PICSerial( Agape::PICSerial& picSerial, Timers::Factory& timerFactory ) :
-  m_picSerial( picSerial ),
-  m_rxTimer( timerFactory.makeTimer() )
+PICSerial::PICSerial( Agape::PICSerial& picSerial ) :
+  m_picSerial( picSerial )
 {
-}
-
-PICSerial::~PICSerial()
-{
-    delete( m_rxTimer );
 }
 
 int PICSerial::open()
 {
     LOG_DEBUG( "PICSerialLineDriver: Opening." );
     m_picSerial.flushInput();
-    m_rxTimer->reset();
     return 0;
 }
 
 int PICSerial::read( char* data, int len )
 {
-    int numRead( m_picSerial.read( data, len ) );
-    if( numRead > 0 )
-    {
-        m_rxTimer->reset();
-    }
-
-    return numRead;
+    return( m_picSerial.read( data, len ) );
 }
 
 int PICSerial::write( const char* data, int len )
@@ -51,12 +38,24 @@ int PICSerial::write( const char* data, int len )
     return m_picSerial.write( data, len );
 }
 
-bool PICSerial::error()
+bool PICSerial::dataCarrierDetect()
 {
-    // FIXME: This is a hack to get ModemLine to drop the line and force a
-    // reconnect if the connection drops. Remove this when we implement
-    // the DCD line etc.
-    return( m_rxTimer->ms() >= rxTimeout );
+    // FIXME: Should DCD and DTR functions be moved into PICSerial.c?
+    // Unlike RTS/CTS flow control they're not part of the PIC UART peripheral,
+    // so perhaps here really is the best place for them.
+    return !PORTCbits.RC13;
+}
+
+void PICSerial::dataTerminalReady( bool ready )
+{
+    if( ready )
+    {
+        PORTCCLR = _PORTC_RC14_MASK;
+    }
+    else
+    {
+        PORTCSET = _PORTC_RC14_MASK;
+    }
 }
 
 } // namespace LineDrivers
