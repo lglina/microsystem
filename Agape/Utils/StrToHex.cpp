@@ -61,7 +61,7 @@ String ucharToHex( unsigned char uc )
     return hex;
 }
 
-String toHexStr( const char* data, int len )
+String toHexStr( const char* data, int len, int displayAddrOffset )
 {
     String line;
     String lines;
@@ -69,7 +69,7 @@ String toHexStr( const char* data, int len )
     {
         if( line.empty() )
         {
-            line += uintToHex( i ) + "  ";
+            line += uintToHex( displayAddrOffset + i ) + "  ";
         }
 
         line += ucharToHex( ( (unsigned char*)data )[i] );
@@ -97,9 +97,9 @@ String toHexStr( const char* data, int len )
     return lines;
 }
 
-void hexDump( const char* data, int len )
+void hexDump( const char* data, int len, int displayAddrOffset )
 {
-    String lines( toHexStr( data, len ) );
+    String lines( toHexStr( data, len, displayAddrOffset ) );
 
     if( !lines.empty() )
     {

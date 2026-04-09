@@ -12,8 +12,8 @@ String ulToHex( unsigned long ul );
 String uintToHex( unsigned int ui );
 String ucharToHex( unsigned char uc );
 
-String toHexStr( const char* data, int len );
-void hexDump( const char* data, int len );
+String toHexStr( const char* data, int len, int displayAddrOffset = 0 );
+void hexDump( const char* data, int len, int displayAddrOffset = 0 );
 
 unsigned long long hexToUll( const String& s );
 
