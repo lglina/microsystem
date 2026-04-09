@@ -39,4 +39,4 @@ public:
 
 } // namespace Agape
 
-#endif // AGAPE_NO_THROW_STRING_H
+#endif // AGAPE_STRING_H
