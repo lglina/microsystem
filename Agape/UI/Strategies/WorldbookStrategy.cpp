@@ -32,7 +32,7 @@ namespace
     const int titleWidth( 50 );
     const int titleAttributes( 0x0F );
 
-    const int guideRow( 20 );
+    const int guideRow( 19 );
 
     const String textAssetName( "worlds-text" );
 } // Anonymous namespace
@@ -346,6 +346,8 @@ void Worldbook::drawSelectForm()
 
     m_terminal->consumeNext( guideRow, contentCol );
     m_terminal->consumeString( "\x1b[0;97;100m\x18/\x19\x1b[37m Select\x1b[0m  \x1b[97;100mC\x1b[37m Create\x1b[0m  \x1b[97;100mJ\x1b[37m Join\x1b[0m  \x1b[97;100mX\x1b[37m Delete\x1b[0m  \x1b[97;100mD\x1b[37m Set default\x1b[0m  \x1b[97;100mEsc\x1b[37m Menu\x1b[0m", false, Terminal::preserveBackground );
+    m_terminal->consumeNext( guideRow + 1, contentCol );
+    m_terminal->consumeString( "\x1b[0;97;100mRet\x1b[37m Enter\x1b[0m   \x1b[97;100mL\x1b[37m Load from server", false, Terminal::preserveBackground );
 
     closeForm();
 
