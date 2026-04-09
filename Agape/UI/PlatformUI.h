@@ -12,6 +12,7 @@ namespace Timers
 class Factory;
 } // namespace Timers
 
+class ConfigurationStore;
 class InputDevice;
 class String;
 class Terminal;
@@ -31,6 +32,7 @@ public:
                 const String& modalWindowName,
                 TabBar& tabBar,
                 InputDevice& inputDevice,
+                ConfigurationStore& configurationStore,
                 Timers::Factory& timerFactory );
     ~PlatformUI();
 
@@ -46,10 +48,16 @@ private:
 
     void showGraphicsWarning();
 
+    void loadAndSetScreenBrightness();
+    void saveScreenBrightness();
+    void loadAndSetKeyboardBrightness();
+    void saveKeyboardBrightness();
+
     Agape::Platform& m_platform;
     WindowManager& m_windowManager;
     TabBar& m_tabBar;
     InputDevice& m_inputDevice;
+    ConfigurationStore& m_configurationStore;
 
     Terminal* m_modalTerminal;
 

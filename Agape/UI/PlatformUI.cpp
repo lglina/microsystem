@@ -9,6 +9,7 @@
 #include "Utils/StrToHex.h"
 #include "Allocator.h"
 #include "Collections.h"
+#include "ConfigurationStore.h"
 #include "PlatformUI.h"
 #include "String.h"
 #include "StringConstants.h"
@@ -17,6 +18,8 @@
 #include "WindowManager.h"
 
 #include <math.h>
+
+using namespace Agape::InputDevices;
 
 namespace
 {
@@ -43,11 +46,13 @@ PlatformUI::PlatformUI( Agape::Platform& platform,
                         const String& modalWindowName,
                         TabBar& tabBar,
                         InputDevice& inputDevice,
+                        ConfigurationStore& configurationStore,
                         Timers::Factory& timerFactory ) :
   m_platform( platform ),
   m_windowManager( windowManager ),
   m_tabBar( tabBar ),
   m_inputDevice( inputDevice ),
+  m_configurationStore( configurationStore ),
   m_modalTerminal( nullptr ),
   m_graphicsWarningShown( false ),
   m_peakHeapUsed( 0 )
@@ -85,15 +90,63 @@ PlatformUI::~PlatformUI()
 
 void PlatformUI::receiveEvent( const Platform::Event& event )
 {
-    if( event.m_type == Platform::powerStateChanged )
+    if( event.m_type == Platform::bootCompleted )
+    {
+        loadAndSetScreenBrightness();
+        loadAndSetKeyboardBrightness();
+    }
+    else if( event.m_type == Platform::powerStateChanged )
     {
         struct Platform::PowerState powerState( m_platform.powerState() );
         updatePowerState( powerState );
+    }
+    else if( event.m_type == Platform::screenBrightnessChanged )
+    {
+        saveScreenBrightness();
+    }
+    else if( event.m_type == Platform::keyboardBrightnessChanged )
+    {
+        saveKeyboardBrightness();
     }
 }
 
 void PlatformUI::run()
 {
+    if( !m_inputDevice.eof() )
+    {
+        char c( m_inputDevice.peek() );
+        bool consumed( false );
+
+        // This is called by the main client loop so any keys defined here can
+        // be used anywhere in the application. We only consume keys that we
+        // recognise so all others can be passed on to the active UI strategy.
+        if( c == control( Key::up ) )
+        {
+            m_platform.screenBrightnessUp();
+            consumed = true;
+        }
+        else if( c == control( Key::down ) )
+        {
+            m_platform.screenBrightnessDown();
+            consumed = true;
+        }
+        else if( c == control( Key::left ) )
+        {
+            m_platform.keyboardBrightnessDown();
+            consumed = true;
+        }
+        else if( c == control( Key::right ) )
+        {
+            m_platform.keyboardBrightnessUp();
+            consumed = true;
+        }
+
+        if( consumed )
+        {
+            m_inputDevice.get();
+        }
+    }
+
     if( m_updateTimer->ms() >= updateInterval )
     {
         if( m_platform.error() )
@@ -218,6 +271,52 @@ void PlatformUI::updateHeapState()
 void PlatformUI::showGraphicsWarning()
 {
     showAssetModal( "mcdp" );
+}
+
+void PlatformUI::loadAndSetScreenBrightness()
+{
+    if( m_configurationStore.hasKey( _platform ) )
+    {
+        const Value& platformValue( m_configurationStore.get( _platform ) );
+        if( platformValue.hasValue( _screenBrightness ) )
+        {
+            m_platform.setScreenBrightness( platformValue[_screenBrightness] );
+        }
+    }
+}
+
+void PlatformUI::saveScreenBrightness()
+{
+    Value& platformValue( m_configurationStore.get( _platform ) );
+    int currentBrightness( m_platform.getScreenBrightness() );
+    if( currentBrightness != (int)platformValue[_screenBrightness] )
+    {
+        platformValue[_screenBrightness] = currentBrightness;
+        m_configurationStore.save();
+    }
+}
+
+void PlatformUI::loadAndSetKeyboardBrightness()
+{
+    if( m_configurationStore.hasKey( _platform ) )
+    {
+        const Value& platformValue( m_configurationStore.get( _platform ) );
+        if( platformValue.hasValue( _keyboardBrightness ) )
+        {
+            m_platform.setScreenBrightness( platformValue[_keyboardBrightness] );
+        }
+    }
+}
+
+void PlatformUI::saveKeyboardBrightness()
+{
+    Value& platformValue( m_configurationStore.get( _platform ) );
+    int currentBrightness( m_platform.getKeyboardBrightness() );
+    if( currentBrightness != (int)platformValue[_keyboardBrightness] )
+    {
+        platformValue[_keyboardBrightness] = currentBrightness;
+        m_configurationStore.save();
+    }
 }
 
 } // namespace UI
