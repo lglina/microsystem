@@ -60,8 +60,10 @@ public:
     virtual bool requestRedraw() { return false; };
     virtual void redrawComplete() {};
 
-    virtual void brightnessUp() {};
-    virtual void brightnessDown() {};
+    virtual void screenBrightnessUp() {};
+    virtual void screenBrightnessDown() {};
+    virtual int getScreenBrightness() { return 0; };
+    virtual void setScreenBrightness( int brightness ) {};
 
     virtual bool error() { return false; };
 
