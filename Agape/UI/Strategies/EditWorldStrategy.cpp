@@ -564,6 +564,23 @@ void EditWorld::run()
                     m_state = editTextSaveError;
                 }
             }
+            else if( c == control( 'q' ) )
+            {
+                if( quickSave() )
+                {
+                    drawQuickSaveSuccess();
+                    m_state = editTextQuickSaveSuccess;
+                    m_timer->reset();
+                }
+                else
+                {
+                    const char* message( "The item text could not be saved.\
+                                          Hit \x1b[97mRet\x1b[0m to go back, then\
+                                          \x1b[97mC-Q\x1b[0m to try saving again." );
+                    drawError( message );
+                    m_state = editTextSaveError;
+                }
+            }
             else if( c == Key::escape )
             {
                 if( m_editor && m_editor->modified() )
@@ -628,6 +645,14 @@ void EditWorld::run()
         {
             hideDialogue();
             m_state = updateForm;
+        }
+    }
+    else if( m_state == editTextQuickSaveSuccess )
+    {
+        if( m_timer->ms() >= 1000 )
+        {
+            hideDialogue();
+            m_state = editText;
         }
     }
     else if( m_state == editTextError )
@@ -765,7 +790,7 @@ bool EditWorld::drawEdit()
                                            String(),
                                            String(),
                                            m_updateSceneItem->snowflake(),
-                                           "\x1b[0m\x1b[97;100mC-S\x1b[37m Save\x1b[0m  \x1b[97;100mEsc\x1b[37m Discard\x1b[0m" );
+                                           "\x1b[0m\x1b[97;100mC-S/Q\x1b[37m Save/Quick\x1b[0m  \x1b[97;100mEsc\x1b[37m Discard\x1b[0m" );
     if( m_editor->open( Agape::Editor::Editor::modeWrite | Agape::Editor::Editor::modeCreate ) )
     {
         m_windowManager.setTerminalWindowVisible( m_formWindowName, true );
@@ -774,6 +799,15 @@ bool EditWorld::drawEdit()
     }
 
     return false;
+}
+
+void EditWorld::drawQuickSaveSuccess()
+{
+    const char* message( "Saved" );
+
+    m_dialogue.show( Dialogue::success );
+    m_dialogue.drawTitle( "Success" );
+    m_dialogue.drawMessage( message );
 }
 
 void EditWorld::drawDiscard()
@@ -837,6 +871,36 @@ void EditWorld::drawHotkeysUpdatePlace()
     m_hotkeys.show( "Ret", "Place" );
     m_hotkeys.show( "M", "Sel next" );
     m_hotkeys.show( "Esc", "Cancel" );
+}
+
+bool EditWorld::quickSave()
+{
+    int offset = 0;
+    int row = 0;
+    int col = 0;
+    m_editor->getPosition( offset, row, col );
+
+    if( m_editor->close( true ) )
+    {
+        delete( m_editor );
+
+        Coordinates coordinates( m_worldMetadata.m_worldID );
+        m_editor = m_editorFactory.makeEditor( coordinates,
+                                               m_updateSceneItem->snowflake() + "_txt",
+                                               String(),
+                                               String(),
+                                               m_updateSceneItem->snowflake(),
+                                               "\x1b[0m\x1b[97;100mC-S/Q\x1b[37m Save/Quick\x1b[0m  \x1b[97;100mEsc\x1b[37m Discard\x1b[0m" );
+        if( m_editor->open( Editor::Editor::modeWrite | Editor::Editor::modeCreate ) )
+        {
+            m_editor->setPosition( offset, row, col );
+            m_editor->draw( false, false ); // false = don't highlight, false = don't repaginate (this is done for setPosition()).
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 bool EditWorld::closeEditor( bool save )

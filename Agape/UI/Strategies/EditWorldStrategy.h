@@ -92,6 +92,7 @@ private:
         updateFormError,
         updatePlace,
         editText,
+        editTextQuickSaveSuccess,
         editTextDiscard,
         editTextSaveError,
         editTextError
@@ -100,6 +101,7 @@ private:
     void drawBackground();
     void drawSceneItemForm();
     bool drawEdit();
+    void drawQuickSaveSuccess();
     void drawDiscard();
     void drawError( const String& message );
     void hideDialogue();
@@ -111,6 +113,7 @@ private:
     void start();
     void finish();
 
+    bool quickSave();
     bool closeEditor( bool save );
 
     void closeForm();
