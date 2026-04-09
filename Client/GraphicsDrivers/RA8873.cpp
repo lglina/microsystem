@@ -9,6 +9,7 @@
 #include "BusController.h"
 #include "RA8873.h"
 #include "String.h"
+#include "Version.h"
 #include "vga.h"
 #include "Avatars.h"
 
@@ -301,16 +302,29 @@ int RA8873::glyphWidth()
     return _glyphWidth;
 }
 
-void RA8873::brightnessUp()
+void RA8873::screenBrightnessUp()
 {
     m_brightness += 0x1000;
     if( m_brightness > 0x7FFF ) m_brightness = 0x7FFF;
     setBrightness();
 }
 
-void RA8873::brightnessDown()
+void RA8873::screenBrightnessDown()
 {
     m_brightness -= 0x1000;
+    if( m_brightness < 0x1000 ) m_brightness = 0x1000;
+    setBrightness();
+}
+
+int RA8873::getScreenBrightness()
+{
+    return m_brightness;
+}
+
+void RA8873::setScreenBrightness( int brightness )
+{
+    m_brightness = brightness;
+    if( m_brightness > 0x7FFF ) m_brightness = 0x7FFF;
     if( m_brightness < 0x1000 ) m_brightness = 0x1000;
     setBrightness();
 }
@@ -473,10 +487,23 @@ void RA8873::panic( unsigned int address, unsigned int code )
     writeData( '0' );
     writeData( 0x00 );
     writeData( 'x' );
-
     for( int i( ( sizeof( unsigned int ) * 2 ) - 1 ); i >= 0; --i )
     {
         c = nybbleToHexChar( ( code >> ( i * 4 ) ) & 0xF );
+        writeData( 0x00 );
+        writeData( c );
+    }
+
+    setTextPosition( panicWindowX + ( panicMessageFirstCol * _glyphWidth ),
+                     panicWindowY + ( ( panicMessageFirstRow + 6 ) * _glyphHeight ) );
+    m_bus.write( BusAddresses::GraphCommand, 0x04 ); // Data port.
+    writeData( 0x00 );
+    writeData( '0' );
+    writeData( 0x00 );
+    writeData( 'x' );
+    for( int i( ( sizeof( int ) * 2 ) - 1 ); i >= 0; --i )
+    {
+        c = nybbleToHexChar( ( g_buildNumber >> ( i * 4 ) ) & 0xF );
         writeData( 0x00 );
         writeData( c );
     }
@@ -731,6 +758,19 @@ void RA8873::displayCopyright()
     {
         writeData( 0x00 );
         writeData( copyright[x] );
+    }
+
+    LiteStream versionStream;
+    versionStream << "v." << g_buildNumber;
+    String version( versionStream.str() );
+    x = 720 - ( version.length() * 8 );
+    setTextPosition( x, y );
+    m_bus.write( BusAddresses::GraphCommand, 0x04 ); // Data port.
+
+    for( int x = 0; x < version.length(); ++x )
+    {
+        writeData( 0x00 );
+        writeData( version[x] );
     }
 }
 

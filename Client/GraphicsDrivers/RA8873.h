@@ -35,8 +35,10 @@ public:
     virtual int glyphHeight() __attribute__((nomips16));
     virtual int glyphWidth() __attribute__((nomips16));
 
-    virtual void brightnessUp() __attribute__((nomips16));
-    virtual void brightnessDown() __attribute__((nomips16));
+    virtual void screenBrightnessUp() __attribute__((nomips16));
+    virtual void screenBrightnessDown() __attribute__((nomips16));
+    virtual int getScreenBrightness() __attribute__((nomips16));
+    virtual void setScreenBrightness( int brightness ) __attribute__((nomips16));
 
     virtual bool error() __attribute__((nomips16));
 
