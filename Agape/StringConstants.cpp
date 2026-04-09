@@ -56,6 +56,8 @@ namespace Agape
     const char* _TelegramLoader( "TelegramLoader" );
     const char* _TelegramLoaderResponder( "TelegramLoaderResponder" );
     const char* _Timer( "Timer" );
+    const char* _UpdateClient( "UpdateClient" );
+    const char* _UpdateServer( "UpdateServer" );
     const char* _World( "World" );
     const char* _WorldLoader( "WorldLoader" );
     const char* _WorldLoaderResponder( "WorldLoaderResponder" );
@@ -139,6 +141,12 @@ namespace Agape
     const char* _Time( "Time" );
     const char* _TransportThing( "TransportThing" );
     const char* _Unload( "Unload" );
+    const char* _UpdateMetadataRequest( "UpdateMetadataRequest" );
+    const char* _UpdateMetadataResponse( "UpdateMetadataResponse" );
+    const char* _UpdateOpenRequest( "UpdateOpenRequest" );
+    const char* _UpdateOpenResponse( "UpdateOpenResponse" );
+    const char* _UpdateReadRequest( "UpdateReadRequest" );
+    const char* _UpdateReadResponse( "UpdateReadResponse" );
     const char* _WorldCreateRequest( "WorldCreateRequest" );
     const char* _WorldCreateResponse( "WorldCreateResponse" );
     const char* _WorldCreateTeleportRequest( "WorldCreateTeleportRequest" );
@@ -165,6 +173,7 @@ namespace Agape
     const char* _action( "action" );
     const char* _add( "add" );
     const char* _allDevices( "allDevices" );
+    const char* _antiLoopback( "antiLoopback" );
     const char* _assetName( "assetName" );
     const char* _assetType( "assetType" );
     const char* _attribute( "attrib" );
@@ -191,6 +200,7 @@ namespace Agape
     const char* _doInvite( "doInvite" );
     const char* _doTeleport( "doTeleport" );
     const char* _edge( "edge" );
+    const char* _empty( "empty" );
     const char* _findThing( "findThing" );
     const char* _findThings( "findThings" );
     const char* _flags( "flags" );
@@ -209,6 +219,7 @@ namespace Agape
     const char* _items( "items" );
     const char* _joinedWorlds( "joinedWorlds" );
     const char* _keyboard( "keyboard" );
+    const char* _keyboardBrightness( "keyboardBrightness" );
     const char* _keyType( "keyType" );
     const char* _lastSeen( "lastSeen" );
     const char* _length( "length" );
@@ -234,6 +245,7 @@ namespace Agape
     const char* _originatorID( "originatorID" );
     const char* _overlap( "overlap" );
     const char* _owner( "owner" );
+    const char* _platform( "platform" );
     const char* _presenceOperation( "presenceOperation" );
     const char* _present( "present" );
     const char* _privateKey( "privateKey" );
@@ -246,6 +258,7 @@ namespace Agape
     const char* _sceneItems( "sceneItems" );
     const char* _sceneOperation( "sceneOperation" );
     const char* _scenePresence( "scenePresence" );
+    const char* _screenBrightness( "screenBrightness" );
     const char* _sealedWorldKey( "sealedWorldKey" );
     const char* _sealingKey( "sealingKey" );
     const char* _senderSnowflake( "senderSnowflake" );
@@ -277,6 +290,7 @@ namespace Agape
     const char* _userWrite( "userWrite" );
     const char* _value( "value" );
     const char* _values( "values" );
+    const char* _version( "version" );
     const char* _width( "width" );
     const char* _world( "world" );
     const char* _worldAuthKey( "worldAuthKey" );
@@ -304,11 +318,15 @@ namespace Agape
 
     const char* _My_WiFi_Networks( "My WiFi Networks" );
     const char* _Network( "Network" );
+    const char* _Username( "Username" );
     const char* _Password( "Password" );
+    const char* __Identity( "Identity" );
 
     const char* _Access_Point_Names( "Access Point Names" );
     const char* _Access_Point_Scan( "Access Point Scan" );
     const char* _Add_Access_Point_Name( "Add Access Point Name" );
+    const char* _Add_Access_Point_Username( "Add Access Point Username" );
+    const char* _Add_Access_Point_Identity( "Add Access Point Identity" );
     const char* _Add_Access_Point_Password( "Add Access Point Password" );
     const char* _Delete_Access_Point_Name( "Delete Access Point Name" );
 
@@ -348,6 +366,7 @@ namespace Agape
     const char* _accountAuthKey( "accountAuthKey" );
     const char* _deviceAuthKey( "deviceAuthKey" );
     const char* _telaDeviceAuthKeyHash( "telaDeviceAuthKeyHash" );
+    const char* _updateStream( "updateStream" );
 
     const char* _authenticate( "authenticate" );
 
@@ -408,6 +427,8 @@ namespace Agape
     const char* _scene_( "scene_" );
 
     const char* _loop( "loop" );
+
+    const char* _Update_Available( "Update Available" );
 
     // Baked-in world IDs and keys
     const char* _sharedAssetsWorldID( "N0cI//dxndWXnsh11WzSKG9tPPfsMXo7JWMqqyjsN7s=" );

@@ -58,6 +58,8 @@ namespace Agape
     extern const char* _TelegramLoader;
     extern const char* _TelegramLoaderResponder;
     extern const char* _Timer;
+    extern const char* _UpdateClient;
+    extern const char* _UpdateServer;
     extern const char* _World;
     extern const char* _WorldLoader;
     extern const char* _WorldLoaderResponder;
@@ -141,6 +143,12 @@ namespace Agape
     extern const char* _Time;
     extern const char* _TransportThing;
     extern const char* _Unload;
+    extern const char* _UpdateMetadataRequest;
+    extern const char* _UpdateMetadataResponse;
+    extern const char* _UpdateOpenRequest;
+    extern const char* _UpdateOpenResponse;
+    extern const char* _UpdateReadRequest;
+    extern const char* _UpdateReadResponse;
     extern const char* _WorldCreateRequest;
     extern const char* _WorldCreateResponse;
     extern const char* _WorldCreateTeleportRequest;
@@ -167,6 +175,7 @@ namespace Agape
     extern const char* _action;
     extern const char* _add;
     extern const char* _allDevices;
+    extern const char* _antiLoopback;
     extern const char* _assetName;
     extern const char* _assetType;
     extern const char* _attribute;
@@ -193,6 +202,7 @@ namespace Agape
     extern const char* _doInvite;
     extern const char* _doTeleport;
     extern const char* _edge;
+    extern const char* _empty;
     extern const char* _findThing;
     extern const char* _findThings;
     extern const char* _flags;
@@ -211,6 +221,7 @@ namespace Agape
     extern const char* _items;
     extern const char* _joinedWorlds;
     extern const char* _keyboard;
+    extern const char* _keyboardBrightness;
     extern const char* _keyType;
     extern const char* _lastSeen;
     extern const char* _length;
@@ -236,6 +247,7 @@ namespace Agape
     extern const char* _originatorID;
     extern const char* _overlap;
     extern const char* _owner;
+    extern const char* _platform;
     extern const char* _presenceOperation;
     extern const char* _present;
     extern const char* _privateKey;
@@ -248,6 +260,7 @@ namespace Agape
     extern const char* _sceneItems;
     extern const char* _sceneOperation;
     extern const char* _scenePresence;
+    extern const char* _screenBrightness;
     extern const char* _sealedWorldKey;
     extern const char* _sealingKey;
     extern const char* _senderSnowflake;
@@ -279,6 +292,7 @@ namespace Agape
     extern const char* _userWrite;
     extern const char* _value;
     extern const char* _values;
+    extern const char* _version;
     extern const char* _width;
     extern const char* _world;
     extern const char* _worldAuthKey;
@@ -306,11 +320,15 @@ namespace Agape
 
     extern const char* _My_WiFi_Networks;
     extern const char* _Network;
+    extern const char* _Username;
     extern const char* _Password;
+    extern const char* __Identity;
 
     extern const char* _Access_Point_Names;
     extern const char* _Access_Point_Scan;
     extern const char* _Add_Access_Point_Name;
+    extern const char* _Add_Access_Point_Username;
+    extern const char* _Add_Access_Point_Identity;
     extern const char* _Add_Access_Point_Password;
     extern const char* _Delete_Access_Point_Name;
 
@@ -350,6 +368,7 @@ namespace Agape
     extern const char* _accountAuthKey;
     extern const char* _deviceAuthKey;
     extern const char* _telaDeviceAuthKeyHash;
+    extern const char* _updateStream;
 
     extern const char* _authenticate;
 
@@ -410,6 +429,8 @@ namespace Agape
     extern const char* _scene_;
 
     extern const char* _loop;
+
+    extern const char* _Update_Available;
 
     // Baked-in world IDs and keys
     extern const char* _sharedAssetsWorldID;
