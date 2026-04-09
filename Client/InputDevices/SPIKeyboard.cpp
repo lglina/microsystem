@@ -34,7 +34,7 @@ SPIKeyboard::~SPIKeyboard()
     delete( m_timer );
 }
 
-bool SPIKeyboard::eof()
+bool SPIKeyboard::eof() const
 {
     return m_buffer.isEmpty();
 }

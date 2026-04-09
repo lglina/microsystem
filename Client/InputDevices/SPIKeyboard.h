@@ -25,7 +25,7 @@ public:
                  Timers::Factory& timerFactory );
     ~SPIKeyboard();
 
-    virtual bool eof();
+    virtual bool eof() const;
     virtual char peek();
     virtual char get();
 
