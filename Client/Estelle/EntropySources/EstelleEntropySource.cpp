@@ -20,8 +20,7 @@ Estelle::Estelle( Timers::Factory& timerFactory,
   m_picSerial( picSerial ), // Not used normally - can be used for direct entropy dumping for debugging.
   m_entropyPool( 64 ),
   m_shiftIn( 0 ),
-  m_shiftCount( 0 ),
-  m_count( 0 ) // REMOVE ME
+  m_shiftCount( 0 )
 {
     CCP2CON1bits.MOD = 0x01; // Single compare mode.
     CCP2CON2bits.OCAEN = 1; // Enable A and B outputs.
@@ -32,10 +31,14 @@ Estelle::Estelle( Timers::Factory& timerFactory,
 
     CM2CONbits.CCH = 3;
     T2CONbits.TCS = 0;
+
+    setPowerState( PowerState::off );
 }
 
 Estelle::~Estelle()
 {
+    setPowerState( PowerState::off );
+
     delete( m_timer );
 }
 
@@ -53,6 +56,21 @@ int Estelle::generate( char* buffer, int len )
 
 void Estelle::run()
 {
+    if( CCP2CON1bits.ON == 0 ) return;
+
+    // IMPORTANT: This cannot be allowed to run more than once every ~5-10 us,
+    // as otherwise we can see two interrelated avalanche events and consider
+    // them to be unrelated. If running this in a tight loop, there needs
+    // to be an m_timer->usleep(10) call. As it is, this is not running more
+    // than once every 175 us with other Estelle workloads.
+
+    // FIXME: This implementation is bad. We only look for edges when we're
+    // called, yet the edges are quite short (a few us) and so we don't often
+    // see one, limiting throughput. An alternative would be to use the
+    // PIC's input capture peripheral to find an edge within a defined time
+    // window. Halve the window, then detect-nodetect = 1, nodetect-detect = 0,
+    // d-d and nd-nd are skip.
+
     int bit1 = PORTCbits.RC0;
     m_timer->usleep( 10 );
     int bit2 = PORTCbits.RC0;

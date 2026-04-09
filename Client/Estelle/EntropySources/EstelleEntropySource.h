@@ -40,8 +40,6 @@ private:
 
     unsigned int m_shiftIn;
     int m_shiftCount;
-
-    int m_count;
 };
 
 } // namespace EntropySources
