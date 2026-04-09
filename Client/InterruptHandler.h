@@ -50,7 +50,11 @@ public:
         UART5Tx,
 #endif
         timer1,
-        timer2
+        timer2,
+        CNA,
+        CNB,
+        CNC,
+        CND
     };
 
     InterruptDispatcher() __attribute__((section(".keep")));
@@ -93,6 +97,10 @@ private:
 #endif
     InterruptHandler* m_timer1Handler;
     InterruptHandler* m_timer2Handler;
+    InterruptHandler* m_CNAHandler;
+    InterruptHandler* m_CNBHandler;
+    InterruptHandler* m_CNCHandler;
+    InterruptHandler* m_CNDHandler;
 };
 
 class InterruptHandler

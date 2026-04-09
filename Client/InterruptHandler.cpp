@@ -1,6 +1,8 @@
 #include "GraphicsDrivers/GraphicsDriver.h"
 #include "InterruptHandler.h"
 
+#include <xc.h>
+
 extern "C"
 {
 #if defined(__PIC32MX__)
@@ -12,25 +14,41 @@ extern "C"
     void __ISR(_SPI_1_VECTOR, IPL1AUTO) interruptSPI1() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_SPI_2_VECTOR, IPL1AUTO) interruptSPI2() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
 #elif defined(__PIC32MM__) || defined(__PIC32MZ__)
+#ifndef MIN_INTERRUPTS
     void __ISR(_UART1_RX_VECTOR, IPL1AUTO) interruptUART1RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART1_TX_VECTOR, IPL1AUTO) interruptUART1TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART2_RX_VECTOR, IPL1AUTO) interruptUART2RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART2_TX_VECTOR, IPL1AUTO) interruptUART2TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART3_RX_VECTOR, IPL2AUTO) interruptUART3RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16)); // Higher prio for MIDI out.
     void __ISR(_UART3_TX_VECTOR, IPL2AUTO) interruptUART3TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif // MIN_INTERRUPTS
     void __ISR(_SPI1_RX_VECTOR, IPL1AUTO) interruptSPI1RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_SPI1_TX_VECTOR, IPL1AUTO) interruptSPI1TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#ifndef MIN_INTERRUPTS
     void __ISR(_SPI2_RX_VECTOR, IPL1AUTO) interruptSPI2RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_SPI2_TX_VECTOR, IPL1AUTO) interruptSPI2TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif // MIN_INTERRUPTS
 #endif
 #if defined(__PIC32MZ__)
+#ifndef MIN_INTERRUPTS
     void __ISR(_UART4_RX_VECTOR, IPL1AUTO) interruptUART4RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART4_TX_VECTOR, IPL1AUTO) interruptUART4TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif // MIN_INTERRUPTS
     void __ISR(_UART5_RX_VECTOR, IPL1AUTO) interruptUART5RX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
     void __ISR(_UART5_TX_VECTOR, IPL1AUTO) interruptUART5TX() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
 #endif
+#ifndef MIN_INTERRUPTS
     void __ISR(_TIMER_1_VECTOR, IPL1AUTO) interruptTimer1() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif // MIN_INTERRUPTS
     void __ISR(_TIMER_2_VECTOR, IPL1AUTO) interruptTimer2() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#ifndef MIN_INTERRUPTS
+#ifdef _CHANGE_NOTICE_A_VECTOR
+    void __ISR(_CHANGE_NOTICE_A_VECTOR, IPL1AUTO) interruptCNA() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif
+    void __ISR(_CHANGE_NOTICE_B_VECTOR, IPL1AUTO) interruptCNB() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+    void __ISR(_CHANGE_NOTICE_C_VECTOR, IPL1AUTO) interruptCNC() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+    void __ISR(_CHANGE_NOTICE_D_VECTOR, IPL1AUTO) interruptCND() __attribute__((__used__)) __attribute__((section(".keep"), nomips16));
+#endif // MIN_INTERRUPTS
 
     void _general_exception_handler(void) __attribute__((nomips16));
 }
@@ -110,7 +128,7 @@ void __ISR(_SPI_2_VECTOR, IPL1AUTO) interruptSPI2()
 }
 
 #elif defined(__PIC32MM__) || defined(__PIC32MZ__)
-
+#ifndef MIN_INTERRUPTS
 void __ISR(_UART1_RX_VECTOR, IPL1AUTO) interruptUART1RX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::UART1Rx );
@@ -140,6 +158,7 @@ void __ISR(_UART3_TX_VECTOR, IPL2AUTO) interruptUART3TX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::UART3Tx );
 }
+#endif // MIN_INTERRUPTS
 
 void __ISR(_SPI1_RX_VECTOR, IPL1AUTO) interruptSPI1RX()
 {
@@ -151,6 +170,7 @@ void __ISR(_SPI1_TX_VECTOR, IPL1AUTO) interruptSPI1TX()
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::SPI1Tx );
 }
 
+#ifndef MIN_INTERRUPTS
 void __ISR(_SPI2_RX_VECTOR, IPL1AUTO) interruptSPI2RX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::SPI2Rx );
@@ -160,11 +180,13 @@ void __ISR(_SPI2_TX_VECTOR, IPL1AUTO) interruptSPI2TX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::SPI2Tx );
 }
+#endif // MIN_INTERRUPTS
 
 #endif
 
 #if defined(__PIC32MZ__)
 
+#ifndef MIN_INTERRUPTS
 void __ISR(_UART4_RX_VECTOR, IPL1AUTO) interruptUART4RX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::UART4Rx );
@@ -174,6 +196,7 @@ void __ISR(_UART4_TX_VECTOR, IPL1AUTO) interruptUART4TX()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::UART4Tx );
 }
+#endif // MIN_INTERRUPTS
 
 void __ISR(_UART5_RX_VECTOR, IPL1AUTO) interruptUART5RX()
 {
@@ -187,15 +210,41 @@ void __ISR(_UART5_TX_VECTOR, IPL1AUTO) interruptUART5TX()
 
 #endif
 
+#ifndef MIN_INTERRUPTS
 void __ISR(_TIMER_1_VECTOR, IPL1AUTO) interruptTimer1()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::timer1 );
 }
+#endif // MIN_INTERRUPTS
 
 void __ISR(_TIMER_2_VECTOR, IPL1AUTO) interruptTimer2()
 {
     Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::timer2 );
 }
+
+#ifndef MIN_INTERRUPTS
+#ifdef _CHANGE_NOTICE_A_VECTOR
+void __ISR(_CHANGE_NOTICE_A_VECTOR, IPL1AUTO) interruptCNA()
+{
+    Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::CNA );
+}
+#endif
+
+void __ISR(_CHANGE_NOTICE_B_VECTOR, IPL1AUTO) interruptCNB()
+{
+    Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::CNB );
+}
+
+void __ISR(_CHANGE_NOTICE_C_VECTOR, IPL1AUTO) interruptCNC()
+{
+    Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::CNC );
+}
+
+void __ISR(_CHANGE_NOTICE_D_VECTOR, IPL1AUTO) interruptCND()
+{
+    Agape::InterruptDispatcher::instance()->dispatch( Agape::InterruptDispatcher::CND );
+}
+#endif // MIN_INTERRUPTS
 
 namespace Agape
 {
@@ -229,7 +278,11 @@ InterruptDispatcher::InterruptDispatcher() :
   m_UART5TxHandler( nullptr ),
 #endif
   m_timer1Handler( nullptr ),
-  m_timer2Handler( nullptr )
+  m_timer2Handler( nullptr ),
+  m_CNAHandler( nullptr ),
+  m_CNBHandler( nullptr ),
+  m_CNCHandler( nullptr ),
+  m_CNDHandler( nullptr )
 {
 }
 
@@ -304,6 +357,18 @@ void InterruptDispatcher::registerHandler( enum InterruptVector vector, Interrup
         break;
     case timer2:
         m_timer2Handler = handler;
+        break;
+    case CNA:
+        m_CNAHandler = handler;
+        break;
+    case CNB:
+        m_CNBHandler = handler;
+        break;
+    case CNC:
+        m_CNCHandler = handler;
+        break;
+    case CND:
+        m_CNDHandler = handler;
         break;
     default:
         break;
@@ -382,6 +447,18 @@ void InterruptDispatcher::deregisterHandler( enum InterruptVector vector )
     case timer2:
         m_timer2Handler = nullptr;
         break;
+    case CNA:
+        m_CNAHandler = nullptr;
+        break;
+    case CNB:
+        m_CNBHandler = nullptr;
+        break;
+    case CNC:
+        m_CNCHandler = nullptr;
+        break;
+    case CND:
+        m_CNDHandler = nullptr;
+        break;
     default:
         break;
     }
@@ -423,6 +500,7 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
         }
         break;
 #elif defined(__PIC32MM__) || defined(__PIC32MZ__)
+#ifndef MIN_INTERRUPTS
     case UART1Rx:
         if( m_UART1RxHandler )
         {
@@ -459,6 +537,7 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
             m_UART3TxHandler->handleInterrupt( UART3Tx );
         }
         break;
+#endif // MIN_INTERRUPTS
     case SPI1Rx:
         if( m_SPI1RxHandler )
         {
@@ -471,6 +550,7 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
             m_SPI1TxHandler->handleInterrupt( SPI1Tx );
         }
         break;
+#ifndef MIN_INTERRUPTS
     case SPI2Rx:
         if( m_SPI2RxHandler )
         {
@@ -483,8 +563,10 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
             m_SPI2TxHandler->handleInterrupt( SPI2Tx );
         }
         break;
+#endif // MIN_INTERRUPTS
 #endif
 #if defined(__PIC32MZ__)
+#ifndef MIN_INTERRUPTS
     case UART4Rx:
         if( m_UART4RxHandler )
         {
@@ -497,6 +579,7 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
             m_UART4TxHandler->handleInterrupt( UART4Tx );
         }
         break;
+#endif // MIN_INTERRUPTS
     case UART5Rx:
         if( m_UART5RxHandler )
         {
@@ -510,18 +593,46 @@ void InterruptDispatcher::dispatch( enum InterruptVector vector )
         }
         break;
 #endif
+#ifndef MIN_INTERRUPTS
     case timer1:
         if( m_timer1Handler )
         {
             m_timer1Handler->handleInterrupt( timer1 );
         }
         break;
+#endif // MIN_INTERRUPTS
     case timer2:
         if( m_timer2Handler )
         {
             m_timer2Handler->handleInterrupt( timer2 );
         }
         break;
+#ifndef MIN_INTERRUPTS
+    case CNA:
+        if( m_CNAHandler )
+        {
+            m_CNAHandler->handleInterrupt( CNA );
+        }
+        break;
+    case CNB:
+        if( m_CNBHandler )
+        {
+            m_CNBHandler->handleInterrupt( CNB );
+        }
+        break;
+    case CNC:
+        if( m_CNCHandler )
+        {
+            m_CNCHandler->handleInterrupt( CNC );
+        }
+        break;
+    case CND:
+        if( m_CNDHandler )
+        {
+            m_CNDHandler->handleInterrupt( CND );
+        }
+        break;
+#endif // MIN_INTERRUPTS
     default:
         break;
     }
