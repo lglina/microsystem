@@ -4,6 +4,7 @@
 #include "AssetLoaders/Factories/MiniMapAssetLoaderFactory.h"
 #include "Audio/MIDIPlayers/SAM2695MIDIPlayer.h"
 #include "Clocks/VRTimeClock.h"
+#include "EntropySources/PIC32EntropySource.h"
 #include "EntropySources/SPIEntropySource.h"
 #include "EventClocks/NullEventClock.h"
 #include "GraphicsDrivers/RA8873.h"
@@ -27,6 +28,7 @@
 #include "UI/Strategies/MemoryStrategy.h"
 #include "UI/Strategies/Splash.h"
 #include "UI/Strategies/TestStrategy.h"
+#include "UI/Strategies/UpdateStrategy.h"
 #include "UI/VRTime.h"
 #include "WorldLoaders/Factories/KiamaFSWorldLoaderFactory.h"
 #include "BoopieOfflineClientBuilder.h"
@@ -75,6 +77,7 @@ void BoopieOffline::_deleteMembers()
     delete( m_spiController );
     delete( m_configurationStoreMemory );
     delete( m_fs );
+    delete( m_fsMemory );
     delete( m_flash );
     delete( m_pic32PrecisionTimerFactory );
     delete( m_absoluteTimer );
@@ -88,6 +91,7 @@ void BoopieOffline::_setMembersNull()
     m_absoluteTimer = nullptr;
     m_pic32PrecisionTimerFactory = nullptr;
     m_flash = nullptr;
+    m_fsMemory = nullptr;
     m_fs = nullptr;
     m_configurationStoreMemory = nullptr;
     m_spiController = nullptr;
@@ -124,16 +128,23 @@ void BoopieOffline::buildConfigurationStore()
                                          4000000, // Hz
                                          true, // true = master
                                          *m_timerFactory );
-#if defined(__PIC32MX__)
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1, m_spiController );
-#elif defined(__PIC32MZ__)
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Tx, m_spiController );
-    InterruptDispatcher::instance()->registerHandler( InterruptDispatcher::SPI1Rx, m_spiController );
-#endif
     m_spiRequester = new SPIRequester( *m_spiController, *m_bus );
-    m_flash = new Memories::SPIFlash( *m_spiController, *m_bus );
+    m_flash = new Memories::SPIFlash( *m_spiController,
+                                      *m_bus,
+                                      0x800000,
+                                      0x100,
+                                      0x1000,
+                                      0x10000,
+                                      0x0 );
+    m_fsMemory = new Memories::SPIFlash( *m_spiController,
+                                         *m_bus,
+                                         0x100000,
+                                         0x100,
+                                         0x1000,
+                                         0x10000,
+                                         0x0 );
     LOG_DEBUG( "Initialising filesystem" );
-    m_fs = new KiamaFS( *m_flash );
+    m_fs = new KiamaFS( *m_fsMemory );
     LOG_DEBUG( "Done." );
     m_configurationStoreMemory = new Memories::KiamaFS( *m_fs, "config-offline.dat" );
 
@@ -187,7 +198,8 @@ void BoopieOffline::buildClock()
 
 void BoopieOffline::buildEntropySource()
 {
-    m_entropySource = new EntropySources::SPI( *m_spiRequester, *m_timerFactory );
+    m_entropySource = new EntropySources::PIC32TRNG;
+    m_keyEntropySource = new EntropySources::SPI( *m_spiRequester, *m_timerFactory );
 }
 
 void BoopieOffline::buildAssetLoaderFactory()
@@ -230,12 +242,6 @@ void BoopieOffline::buildTelegramLoaderFactory()
 void BoopieOffline::buildMIDIPlayer()
 {
     m_midiSerial = new PICSerial( 3, 31250, 128, 16 );
-#if defined(__32MX470F512H__)
-    Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3, m_midiSerial );
-#elif defined(__32MZ2048EFG064__)
-    Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3Tx, m_midiSerial );
-    Agape::InterruptDispatcher::instance()->registerHandler( Agape::InterruptDispatcher::UART3Rx, m_midiSerial );
-#endif
     m_midiPlayer = new Audio::MIDIPlayers::SAM2695( *m_midiAssetLoaderFactory, *m_midiSerial );
 }
 
@@ -273,6 +279,25 @@ void BoopieOffline::buildMiniMapAssetLoaderFactory()
     m_miniMapAssetLoaderFactory = new AssetLoaders::Factories::Cache( *m_miniMapAssetLoaderBackingFactory,
                                                                       *m_miniMapAssetCache,
                                                                       false );
+}
+
+void BoopieOffline::buildUpdate()
+{
+    m_updateMemory = new Memories::SPIFlash( *m_spiController,
+                                             *m_bus,
+                                             0x200000,
+                                             0x100,
+                                             0x1000,
+                                             0x10000,
+                                             0x600000 );
+    m_updateStrategy = new Strategies::Update( *m_inputDevice,
+                                               *m_windowManager,
+                                               _LargeDialogue,
+                                               *m_tupleRouter,
+                                               *m_platform,
+                                               *m_updateMemory,
+                                               *m_dialogue,
+                                               *m_timerFactory );
 }
 
 } // namespace ClientBuilders

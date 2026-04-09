@@ -78,6 +78,7 @@ private:
     virtual void buildWorldLoaderFactory();
     virtual void buildSplash();
     virtual void buildMiniMapAssetLoaderFactory();
+    virtual void buildUpdate();
 
     ReadableWritable& m_debugSerial;
 
@@ -89,6 +90,7 @@ private:
     SPIRequester* m_spiRequester;
 
     Memories::SPIFlash* m_flash;
+    Memory* m_fsMemory;
     KiamaFS* m_fs;
 
     Memory* m_configurationStoreMemory;

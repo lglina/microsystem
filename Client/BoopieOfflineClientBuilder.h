@@ -74,6 +74,7 @@ private:
     virtual void buildWorldLoaderFactory();
     virtual void buildSplash();
     virtual void buildMiniMapAssetLoaderFactory();
+    virtual void buildUpdate();
 
     ReadableWritable& m_debugSerial;
 
@@ -82,6 +83,7 @@ private:
     Timers::Factory* m_pic32PrecisionTimerFactory;
 
     Memory* m_flash;
+    Memory* m_fsMemory;
     KiamaFS* m_fs;
     Memory* m_configurationStoreMemory;
 
