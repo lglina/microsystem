@@ -4,7 +4,6 @@
 #include "InputDevices/InputDevice.h"
 #include "Lines/Line.h"
 #include "Loggers/Logger.h"
-#include "Platforms/Platform.h"
 #include "Timers/Factories/TimerFactory.h"
 #include "Timers/Timer.h"
 #include "UI/Dialogue.h"
@@ -60,7 +59,6 @@ Walk::Walk( InputDevice& inputDevice,
             Navigation& navigation,
             Presence& presence,
             VRTime& vrTime,
-            Platform& platform,
             PlatformUI& platformUI,
             NotificationsUI& notificationsUI,
             Timers::Factory& timerFactory,
@@ -80,7 +78,6 @@ Walk::Walk( InputDevice& inputDevice,
   m_navigation( navigation ),
   m_presence( presence ),
   m_vrTime( vrTime ),
-  m_platform( platform ),
   m_platformUI( platformUI ),
   m_notificationsUI( notificationsUI ),
   m_onboardingStrategy( onboardingStrategy ),
@@ -560,22 +557,6 @@ void Walk::doWalk()
         else if( c == control( 'x' ) )
         {
             m_chat.toggleMaximise();
-        }
-        else if( c == control( Key::up ) )
-        {
-            m_platform.brightnessUp();
-        }
-        else if( c == control( Key::down ) )
-        {
-            m_platform.brightnessDown();
-        }
-        else if( c == control( Key::left ) )
-        {
-            m_platform.keyboardBrightnessDown();
-        }
-        else if( c == control( Key::right ) )
-        {
-            m_platform.keyboardBrightnessUp();
         }
         else if( c == control( Key::backspace ) )
         {

@@ -34,7 +34,6 @@ class Clock;
 class EntropySource;
 class InputDevice;
 class Line;
-class Platform;
 class Timer;
 class Value;
 
@@ -65,7 +64,6 @@ public:
           Navigation& navigation,
           Presence& presence,
           VRTime& vrTime,
-          Platform& platform,
           PlatformUI& platformUI,
           NotificationsUI& notificationsUI,
           Timers::Factory& timerFactory,
@@ -117,7 +115,6 @@ private:
     Navigation& m_navigation;
     Presence& m_presence;
     VRTime& m_vrTime;
-    Platform& m_platform;
     PlatformUI& m_platformUI;
     NotificationsUI& m_notificationsUI;
     Strategy& m_onboardingStrategy;
