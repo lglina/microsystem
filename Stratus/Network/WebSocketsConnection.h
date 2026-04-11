@@ -3,8 +3,8 @@
 
 #include "Utils/RingBuffer.h"
 #include "ReadableWritable.h"
-#include "Stratus.h"
 #include "String.h"
+#include "WebSockets.h"
 
 #include <condition_variable>
 #include <mutex>
