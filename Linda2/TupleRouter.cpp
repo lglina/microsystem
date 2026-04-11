@@ -66,8 +66,8 @@ bool TupleRouter::route( Tuple& tuple )
             bool unconditional( *it == m_defaultRoute );
             if( ( unconditional && permitOutDefault( tuple ) ) ||
                 ( !unconditional && permitOut( tuple ) ) )
-                
             {
+                tuple[_antiLoopback] = m_myID;
                 success = (*it)->sendTuple( tuple, unconditional );
 #if defined(LOG_TUPLES) || defined(LOG_TUPLES_BRIEF)
                 if( ( m_routerName != "Hydra" ) &&
@@ -170,8 +170,9 @@ void TupleRouter::run()
                 // Apply different filter rules depending on whether the tuple
                 // is coming in via the default route.
                 bool incomingDefaultRoute( *it == m_defaultRoute );
-                if( ( incomingDefaultRoute && permitInDefault( tuple ) ) ||
-                    ( !incomingDefaultRoute && permitIn( tuple ) ) )
+                if( ( ( incomingDefaultRoute && permitInDefault( tuple ) ) ||
+                      ( !incomingDefaultRoute && permitIn( tuple ) ) ) &&
+                    ( !tuple.hasValue( _antiLoopback ) || ( tuple[_antiLoopback] != m_myID ) ) )
                 {
                     if( TupleRouter::tupleType( tuple ) == _RoutingCriteria )
                     {
@@ -192,6 +193,7 @@ void TupleRouter::run()
                             {
                                 if( it2 != it )
                                 {
+                                    tuple[_antiLoopback] = m_myID;
                                     bool unconditional( *it2 == m_defaultRoute );
                                     // Each route applies its own routing rules
                                     ( *it2 )->sendTuple( tuple, unconditional );
