@@ -33,6 +33,8 @@ public:
     bool credentialsValid() const;
     bool isTela() const;
 
+    const String& updateStream() const;
+
     const String& accountAuthKeyHash() const;
     const String& deviceAuthKeyHash() const;
 
@@ -55,6 +57,8 @@ private:
 
     bool m_credentialsValid;
     bool m_isTela;
+
+    String m_updateStream;
 
     Vector< String > m_joinedWorldIDs;
     Vector< String > m_writableWorldIDs;

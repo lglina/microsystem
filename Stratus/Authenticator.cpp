@@ -73,11 +73,15 @@ bool Authenticator::accept( Tuple& tuple )
                 Base64encode( &m_accountAuthKeyHash[0], &accountAuthKeyHashBin[0], m_keyUtilities.keyHashSize() );
                 m_accountAuthKeyHash.resize( m_accountAuthKeyHash.length() - 1 );
 
+#ifdef LOG_STRATUS
                 LOG_DEBUG( "Authenticator: Received account auth key" );
+#endif
             }
             else
             {
+#ifdef LOG_STRATUS
                 LOG_DEBUG( "Authenticator: Base64-decoded account auth key not expected length!" );
+#endif
                 success = false;
             }
 
@@ -94,11 +98,15 @@ bool Authenticator::accept( Tuple& tuple )
                 Base64encode( &m_deviceAuthKeyHash[0], &deviceAuthKeyHashBin[0], m_keyUtilities.keyHashSize() );
                 m_deviceAuthKeyHash.resize( m_deviceAuthKeyHash.length() - 1 );
 
+#ifdef LOG_STRATUS
                 LOG_DEBUG( "Authenticator: Received device auth key" );
+#endif
             }
             else
             {
+#ifdef LOG_STRATUS
                 LOG_DEBUG( "Authenticator: Base64-decoded device auth key not expected length!" );
+#endif
                 success = false;
             }
 
@@ -110,7 +118,9 @@ bool Authenticator::accept( Tuple& tuple )
         }
         else
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "Authenticator: Authenticate tuple missing account auth key and/or device auth key!" );
+#endif
         }
 
         handled = true;
@@ -126,12 +136,21 @@ bool Authenticator::accept( Tuple& tuple )
 
 bool Authenticator::credentialsValid() const
 {
+#ifndef LOCUST
     return m_credentialsValid;
+#else
+    return true;
+#endif // LOCUST
 }
 
 bool Authenticator::isTela() const
 {
     return m_isTela;
+}
+
+const String& Authenticator::updateStream() const
+{
+    return m_updateStream;
 }
 
 const String& Authenticator::accountAuthKeyHash() const
@@ -146,6 +165,10 @@ const String& Authenticator::deviceAuthKeyHash() const
 
 bool Authenticator::joinedWorld( const String& worldID )
 {
+#ifdef LOCUST
+    return true;
+#endif // LOCUST
+
     for( auto joinedWorldID : m_joinedWorldIDs )
     {
         if( joinedWorldID == worldID ) return true;
@@ -168,6 +191,10 @@ bool Authenticator::joinedWorld( const String& worldID )
  
 bool Authenticator::writableWorld( const String& worldID )
 {
+#ifdef LOCUST
+    return true;
+#endif // LOCUST
+
     for( auto writableWorldID : m_writableWorldIDs )
     {
         if( writableWorldID == worldID ) return true;
@@ -211,7 +238,9 @@ void Authenticator::validateCredentials()
         auto client( MongoDB::pool().acquire() );
         auto collection( ( *client )[_Agape][_Accounts] );
 
+#ifdef LOG_STRATUS
         LOG_DEBUG( "Authenticator: Validating credentials: Account ID: " + m_accountAuthKeyHash + " Device ID: " + m_deviceAuthKeyHash );
+#endif
 
         // Try to find an account with the currently claimed
         // accountAuthKeyHash and deviceAuthKeyHash.
@@ -224,20 +253,27 @@ void Authenticator::validateCredentials()
 
         if( account )
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "Authenticator: Authenticated successfully" );
+#endif
             validated = true;
 
             Value accountValue( DocumentBuilder::unbuild( *account ) );
             m_isTela = ( accountValue[_telaDeviceAuthKeyHash] == m_deviceAuthKeyHash );
+            m_updateStream = accountValue[_updateStream];
         }
         else
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "Authenticator: Account with ID " + m_accountAuthKeyHash + " and device with ID " + m_deviceAuthKeyHash + " not found." );
+#endif
         }
     }
     catch( mongocxx::exception& e )
     {
+#ifdef LOG_STRATUS
         LOG_DEBUG( "Authenticator: Exception attempting to find account with ID " + m_accountAuthKeyHash + " and device with ID " + m_deviceAuthKeyHash + ": " + String( e.what() ) );
+#endif
     }
 
     m_credentialsValid = validated;
@@ -245,7 +281,9 @@ void Authenticator::validateCredentials()
 
 void Authenticator::cacheUserSnowflakes()
 {
+#ifdef LOG_STRATUS
     LOG_DEBUG( "Authenticator: Caching user snowflakes" );
+#endif
 
     try
     {
@@ -284,7 +322,9 @@ void Authenticator::cacheUserSnowflakes()
     }
     catch( mongocxx::exception& e )
     {
+#ifdef LOG_STRATUS
         LOG_DEBUG( "Authenticator: Exception caching user snowflakes: " + String( e.what() ) );
+#endif
     }
 }
 
@@ -299,7 +339,9 @@ void Authenticator::hasJoinedWorld( const String& worldID, bool& joined, bool& w
         auto client( MongoDB::pool().acquire() );
         auto collection( ( *client )[_Agape][_Accounts] );
 
+#ifdef LOG_STRATUS
         LOG_DEBUG( "Authenticator: Looking for joined world " + worldID );
+#endif
 
         // Look for account for current accountAuthKeyHash.
         bsoncxx::stdx::optional< bsoncxx::document::value > account(
@@ -311,7 +353,7 @@ void Authenticator::hasJoinedWorld( const String& worldID, bool& joined, bool& w
         if( account )
         {
             Value accountValue( DocumentBuilder::unbuild( *account ) );
-            
+
             // Look for device for current deviceAuthKeyHash.
             Value& devicesValue( accountValue[_devices] );
             Vector< Value* >::const_iterator devicesIt( devicesValue.listBegin() );
@@ -324,12 +366,16 @@ void Authenticator::hasJoinedWorld( const String& worldID, bool& joined, bool& w
         }
         else
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "Authenticator: Account with ID " + m_accountAuthKeyHash + " not found." );
+#endif
         }
     }
     catch( mongocxx::exception& e )
     {
+#ifdef LOG_STRATUS
         LOG_DEBUG( "Authenticator: Exception loading account: " + String( e.what() ) );
+#endif
     }
 }
 
@@ -337,7 +383,7 @@ void Authenticator::hasJoinedWorldWithDevice( const Value* deviceValue, const St
 {
     auto client( MongoDB::pool().acquire() );
     auto worldsCollection( ( *client )[_Agape][_Worlds] );
-    
+
     // Iterate joined worlds list for device.
     const Value& joinedWorldsValue( ( *deviceValue )[_joinedWorlds] );
     Vector< Value* >::const_iterator joinedWorldsIt( joinedWorldsValue.listBegin() );
@@ -349,7 +395,9 @@ void Authenticator::hasJoinedWorldWithDevice( const Value* deviceValue, const St
         if( joinedWorldID == worldID )
         {
             // WorldID in joined worlds for account.
+#ifdef LOG_STRATUS
             LOG_DEBUG( "Authenticator: Found joined." );
+#endif
             joined = true;
 
             try
@@ -371,19 +419,25 @@ void Authenticator::hasJoinedWorldWithDevice( const Value* deviceValue, const St
                         if( worldUser.m_snowflake == accountUserSnowflake )
                         {
                             writable = true;
+#ifdef LOG_STRATUS
                             LOG_DEBUG( "Authenticator: World is writable." );
+#endif
                             break;
                         }
                     }
                 }
                 else
                 {
+#ifdef LOG_STRATUS
                     LOG_DEBUG( "Authenticator: Unable to find world for joined world ID " + joinedWorldID );
+#endif
                 }
             }
             catch( mongocxx::exception& e )
             {
+#ifdef LOG_STRATUS
                 LOG_DEBUG( "Authenticator: Exception loading world with ID " + joinedWorldID + ": " + String( e.what() ) );
+#endif
             }
 
             break;
