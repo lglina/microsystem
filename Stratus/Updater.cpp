@@ -34,6 +34,9 @@ Updater::Updater( TupleRouter& tupleRouter, Authenticator& authenticator ) :
   Native( _UpdateServer )
 {
     m_tupleRouter.registerActor( this );
+
+    m_allowedStreams.push_back( "stable" );
+    m_allowedStreams.push_back( "dev" );
 }
 
 Updater::~Updater()
@@ -296,6 +299,19 @@ void Updater::updateFromFilesystem()
             LOG_DEBUG( String( "Updater: Found firmware file " ) + directoryEntry.path().filename().c_str() );
 #endif
             std::string streamName = directoryEntry.path().stem();
+
+            bool allowed( false );
+            for( auto allowedName : m_allowedStreams )
+            {
+                if( streamName == allowedName )
+                {
+                    allowed = true;
+                    break;
+                }
+            }
+
+            if( !allowed ) continue;
+
             if( m_streamMetadata.find( streamName ) != m_streamMetadata.end() )
             {
                 if( m_streamMetadata[streamName].m_lastModified < directoryEntry.last_write_time() )

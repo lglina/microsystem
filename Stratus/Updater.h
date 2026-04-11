@@ -46,6 +46,8 @@ private:
     TupleRouter& m_tupleRouter;
     Authenticator& m_authenticator;
 
+    std::vector< std::string > m_allowedStreams;
+
     std::map< std::string, UpdateMetadata > m_streamMetadata;
 
     std::FILE* m_currentFile;
