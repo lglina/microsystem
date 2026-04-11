@@ -1,3 +1,7 @@
+Caliga/build
+Caliga/caliga
+Caliga/caliga.hex
+Caliga/mapfile.map
 Client/Estelle/build/
 Client/Estelle/estelle
 Client/Estelle/estelle.hex
@@ -5,14 +9,15 @@ Client/Estelle/mapfile.map
 Client/build/
 Client/agape
 Client/agape.hex
+Client/agape-merged.hex
 Client/mapfile.map
 MIDIConverter/MIDIConverter
 Stratus/build/
 Stratus/cert.pem
-Stratus/inviter-secret
+Stratus/inviter-secret*
 Stratus/key.pem
 Stratus/Stratus
-Stratus/mongodb-secret
+Stratus/mongodb-secret*
 TerminalSimulator/build/
 TerminalSimulator/Programs/
 TerminalSimulator/Scenes/
@@ -31,3 +36,4 @@ TerminalSimulator/snap-*.png
 *.o
 *moc_*.cpp
 *moc_*.h
+defmplabxtrace.log*
