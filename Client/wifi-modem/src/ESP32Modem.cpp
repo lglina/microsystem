@@ -1,11 +1,11 @@
 #include "Agape/Utils/ArduinoTokeniser.h"
 #include "ESP32Modem.h"
 
-#include <algorithm>
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <elapsedMillis.h>
 #include <HexDump.h>
+#include <map>
 #include <string.h>
 #include <stdint.h>
 
@@ -22,16 +22,21 @@ namespace
     const char* _AccessPointNames( "Access Point Names" );
     const char* _AccessPointScan( "Access Point Scan" );
     const char* _AddAccessPointName( "Add Access Point Name" );
+    const char* _AddAccessPointUsername( "Add Access Point Username" );
+    const char* _AddAccessPointIdentity( "Add Access Point Identity" );
     const char* _AddAccessPointPassword( "Add Access Point Password" );
     const char* _DeleteAccessPointName( "Delete Access Point Name" );
 
     const int connectTimeout( 10000 ); // ms.
     const int defaultPort( 8443 );
 
-    const uint32_t pingInterval( 30000 ); // ms betewen WS ping.
+    const uint32_t pingInterval( 30000 ); // ms between WS ping.
     const uint32_t pongTimeout( 10000 ); // ms to wait for WS pong.
     const uint32_t disconnectTimeoutCount( 3 ); // No. of missed pongs before disconnect.
     const uint32_t reconnectInterval( 10000 ); // ms to wait between reconnect attempts.
+
+    const uint8_t notDCDPin( 0 );
+    const uint8_t notDTRPin( 1 );
 } // Anonymous namespace
 
 namespace Agape
@@ -50,14 +55,14 @@ ESP32Modem::ESP32Modem() :
 {
     s_instance = this;
 
-    pinMode( 0, OUTPUT );   //  /DCD
-    pinMode( 1, OUTPUT );    //  /RI
-    pinMode( 10, INPUT );   //  /FLIGHT
-    pinMode( 3, OUTPUT );   //  NC
-    pinMode( 18, OUTPUT );  //  NC
-    pinMode( 19, OUTPUT );  //  NC
-    pinMode( 5, INPUT );    //  /RTS
-    pinMode( 4, OUTPUT );   //  /CTS
+    pinMode( 0, OUTPUT );       //  /DCD
+    pinMode( 1, INPUT_PULLUP ); //  /DTR
+    pinMode( 10, INPUT_PULLUP );//  /FLIGHT
+    pinMode( 3, OUTPUT );       //  NC
+    pinMode( 18, OUTPUT );      //  NC
+    pinMode( 19, OUTPUT );      //  NC
+    pinMode( 5, INPUT_PULLUP ); //  /RTS
+    pinMode( 4, OUTPUT );       //  /CTS
 
     digitalWrite( 0, 1 ); // No carrier.
     digitalWrite( 1, 1 ); // Not ringing.
@@ -157,10 +162,19 @@ void ESP32Modem::handleData()
 
     if( WiFi.status() != WL_CONNECTED )
     {
+        m_webSocketsClient = WebSocketsClient();
         m_carrier = false;
-        digitalWrite( 0, 1 );
+        digitalWrite( notDCDPin, 1 );
         Serial.println( "WiFi disconnected" );
         Serial1.println( "NO CARRIER" );
+    }
+    else if( digitalRead( notDTRPin ) == 1 )
+    {
+        m_webSocketsClient.disconnect();
+        m_webSocketsClient = WebSocketsClient(); 
+        m_carrier = false;
+        digitalWrite( notDCDPin, 1 );
+        Serial.println( "DTD not asserted. Disconnecting." );
     }
 }
 
@@ -184,25 +198,42 @@ void ESP32Modem::getConfigOptions()
 
     if( m_scanPending )
     {
-        // Scanned access points
-        int numAPs( WiFi.scanNetworks() );
-        std::pair<int, int> rssis[numAPs];
+        int numAPs = WiFi.scanComplete();
+        while( numAPs == -1 )
+        {
+            delay( 250 );
+            numAPs = WiFi.scanComplete();
+        }
+
+        std::map<String, ScanResult> scanResults;
+
         for( int i = 0; i < numAPs; ++i )
         {
-            rssis[i] = std::make_pair( WiFi.RSSI( i ), i );
+            ScanResult result;
+            result.m_idx = i;
+            result.m_rssi = WiFi.RSSI( i );
+            String ssid( WiFi.SSID( i ) );
+            if( ( scanResults.find( ssid ) == scanResults.end() ) ||
+                ( scanResults[ssid].m_rssi < result.m_rssi ) )
+            {
+                scanResults[ssid] = result;
+            }
         }
-        // Sort by strongest signal strength.
-        std::sort( rssis, rssis + numAPs, std::greater<std::pair<int, int>>() );
 
         Serial1.print( _AccessPointScan );
         Serial1.print( ",select," );
-        for( int i = 0; i < numAPs; ++i )
+        std::map<String, ScanResult>::const_iterator it( scanResults.begin() );
+        for( ; it != scanResults.end(); ++it )
         {
-            if( i != 0 )
+            if( it != scanResults.begin() )
             {
                 Serial1.print( ';' );
             }
-            Serial1.print( WiFi.SSID( rssis[i].second ) );
+            Serial1.print( it->first );
+            if( WiFi.encryptionType( it->second.m_idx ) == WIFI_AUTH_WPA2_ENTERPRISE )
+            {
+                Serial1.print( "\xFF[E]" ); // Add enterprise indicator
+            }
         }
         Serial1.print( "\r\n" );
 
@@ -225,6 +256,8 @@ void ESP32Modem::setConfigOptions( const String& command )
 
     bool success( false );
 
+    bool doAdd( false );
+
     ArduinoTokeniser tokeniser( options, ',' );
     String token( tokeniser.token() );
     while( token != "" )
@@ -235,12 +268,28 @@ void ESP32Modem::setConfigOptions( const String& command )
 
         if( name == _AddAccessPointName )
         {
-            m_addAccessPointName = value;
+            // Just save off.
+            ArduinoTokeniser apTokeniser( value, '\xFF' ); // Strip off enterprise indicator
+            m_addAccessPointName = apTokeniser.token();
+            success = true;
+        }
+        else if( name == _AddAccessPointUsername )
+        {
+            // Just save off.
+            m_addAccessPointUsername = hexToStr( value );
+            success = true;
+        }
+        else if( name == _AddAccessPointIdentity )
+        {
+            // Just save off.
+            m_addAccessPointIdentity = hexToStr( value );
             success = true;
         }
         else if( name == _AddAccessPointPassword )
         {
+            // Trigger add with previously set AP name, username and identity.
             addAccessPointPassword = hexToStr( value );
+            doAdd = true;
         }
         else if( name == _DeleteAccessPointName )
         {
@@ -248,6 +297,7 @@ void ESP32Modem::setConfigOptions( const String& command )
         }
         else if( name == _AccessPointScan )
         {
+            WiFi.scanNetworks( true ); // true = async.
             m_scanPending = true;
             success = true;
         }
@@ -255,11 +305,13 @@ void ESP32Modem::setConfigOptions( const String& command )
         token = tokeniser.token();
     }
 
-    if( !m_addAccessPointName.isEmpty() && !addAccessPointPassword.isEmpty() )
+    if( doAdd )
     {
-        success = addAccessPoint( m_addAccessPointName, addAccessPointPassword );
+        success = addAccessPoint( m_addAccessPointName, addAccessPointPassword, m_addAccessPointUsername, m_addAccessPointIdentity );
         saveAccessPoints();
         m_addAccessPointName.clear();
+        m_addAccessPointUsername.clear();
+        m_addAccessPointIdentity.clear();
     }
 
     if( !deleteAccessPointName.isEmpty() )
@@ -319,7 +371,9 @@ void ESP32Modem::connectWiFi()
             Serial.println( "Add AP:" );
             Serial.println( m_accessPoints[i].m_name );
             Serial.println( m_accessPoints[i].m_password );
-            m_wifiMulti->addAP( m_accessPoints[i].m_name, m_accessPoints[i].m_password );
+            Serial.println( m_accessPoints[i].m_username );
+            Serial.println( m_accessPoints[i].m_identity );
+            m_wifiMulti->addAP( m_accessPoints[i].m_name, m_accessPoints[i].m_password, m_accessPoints[i].m_username, m_accessPoints[i].m_identity );
         }
 
         m_wifiMulti->run();
@@ -407,7 +461,7 @@ void ESP32Modem::loadAccessPoints()
     {
         for( int i = 0; i < m_numAccessPoints; ++i )
         {
-            int startOffset( 1 + ( i * FIELD_LENGTH * 2 ) );
+            int startOffset( 1 + ( i * FIELD_LENGTH * 4 ) );
             for( int j = 0; j < FIELD_LENGTH; ++j )
             {
                 m_accessPoints[i].m_name[j] = EEPROM.read( startOffset + j );
@@ -415,6 +469,14 @@ void ESP32Modem::loadAccessPoints()
             for( int j = 0; j < FIELD_LENGTH; ++j )
             {
                 m_accessPoints[i].m_password[j] = EEPROM.read( startOffset + FIELD_LENGTH + j );
+            }
+            for( int j = 0; j < FIELD_LENGTH; ++j )
+            {
+                m_accessPoints[i].m_username[j] = EEPROM.read( startOffset + (FIELD_LENGTH * 2) + j );
+            }
+            for( int j = 0; j < FIELD_LENGTH; ++j )
+            {
+                m_accessPoints[i].m_identity[j] = EEPROM.read( startOffset + (FIELD_LENGTH * 3) + j );
             }
         }
 
@@ -433,7 +495,7 @@ void ESP32Modem::saveAccessPoints()
     EEPROM.write( 0, 0xFF );
     for( int i = 0; i < m_numAccessPoints; ++i )
     {
-        int startOffset( 1 + ( i * FIELD_LENGTH * 2 ) );
+        int startOffset( 1 + ( i * FIELD_LENGTH * 4 ) );
         for( int j = 0; j < FIELD_LENGTH; ++j )
         {
             EEPROM.write( startOffset + j, m_accessPoints[i].m_name[j] );
@@ -442,13 +504,21 @@ void ESP32Modem::saveAccessPoints()
         {
             EEPROM.write( startOffset + FIELD_LENGTH + j, m_accessPoints[i].m_password[j] );
         }
+        for( int j = 0; j < FIELD_LENGTH; ++j )
+        {
+            EEPROM.write( startOffset + (FIELD_LENGTH * 2) + j, m_accessPoints[i].m_username[j] );
+        }
+        for( int j = 0; j < FIELD_LENGTH; ++j )
+        {
+            EEPROM.write( startOffset + (FIELD_LENGTH * 3) + j, m_accessPoints[i].m_identity[j] );
+        }
     }
     EEPROM.write( 0, m_numAccessPoints );
     EEPROM.commit();
     Serial.printf( "%d access point(s) saved successfully\r\n", m_numAccessPoints );
 }
 
-bool ESP32Modem::addAccessPoint( const String& name, const String& password )
+bool ESP32Modem::addAccessPoint( const String& name, const String& password, const String& username, const String& identity )
 {
     Serial.print( "Adding access point " );
     Serial.println( name );
@@ -456,6 +526,8 @@ bool ESP32Modem::addAccessPoint( const String& name, const String& password )
     {
         ::strncpy( m_accessPoints[m_numAccessPoints].m_name, name.c_str(), FIELD_LENGTH );
         ::strncpy( m_accessPoints[m_numAccessPoints].m_password, password.c_str(), FIELD_LENGTH );
+        ::strncpy( m_accessPoints[m_numAccessPoints].m_username, username.c_str(), FIELD_LENGTH );
+        ::strncpy( m_accessPoints[m_numAccessPoints].m_identity, identity.c_str(), FIELD_LENGTH );
         ++m_numAccessPoints;
         
         return true;
@@ -477,6 +549,8 @@ bool ESP32Modem::deleteAccessPoint( const String& name )
             {
                 ::strncpy( m_accessPoints[i - 1].m_name, m_accessPoints[i].m_name, FIELD_LENGTH );
                 ::strncpy( m_accessPoints[i - 1].m_password, m_accessPoints[i].m_password, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[i - 1].m_username, m_accessPoints[i].m_username, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[i - 1].m_identity, m_accessPoints[i].m_identity, FIELD_LENGTH );
             }
             --m_numAccessPoints;
             success = true;
@@ -499,7 +573,7 @@ void ESP32Modem::_webSocketsEvent( WStype_t type, uint8_t* payload, size_t lengt
         if( m_carrier )
         {
             m_carrier = false;
-            digitalWrite( 0, 1 );
+            digitalWrite( notDCDPin, 1 );
             Serial.println( "WS Ev: Disconnected" );
             Serial1.println( "NO CARRIER" );
         }
@@ -508,14 +582,14 @@ void ESP32Modem::_webSocketsEvent( WStype_t type, uint8_t* payload, size_t lengt
         if( m_carrier )
         {
             m_carrier = false;
-            digitalWrite( 0, 1 );
+            digitalWrite( notDCDPin, 1 );
             Serial.println( "WS Ev: Error" );
             Serial1.println( "NO CARRIER" );
         }
         break;
     case WStype_CONNECTED:
         m_carrier = true;
-        digitalWrite( 0, 0 );
+        digitalWrite( notDCDPin, 0 );
         Serial.println( "WS Ev: Connected" );
         break;
     case WStype_BIN:

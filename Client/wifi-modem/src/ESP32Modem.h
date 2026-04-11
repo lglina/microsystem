@@ -36,6 +36,14 @@ private:
     {
         char m_name[FIELD_LENGTH];
         char m_password[FIELD_LENGTH];
+        char m_username[FIELD_LENGTH];
+        char m_identity[FIELD_LENGTH];
+    };
+
+    struct ScanResult
+    {
+        int m_idx;
+        int m_rssi;
     };
 
     void handleATCommand();
@@ -52,7 +60,7 @@ private:
     void loadAccessPoints();
     void saveAccessPoints();
 
-    bool addAccessPoint( const String& name, const String& password );
+    bool addAccessPoint( const String& name, const String& password, const String& username, const String& identity );
     bool deleteAccessPoint( const String& name );
 
     static void webSocketsEvent( WStype_t type, uint8_t* payload, size_t length );
@@ -70,9 +78,6 @@ private:
 #endif
 
     bool m_carrier;
-    
-    String m_apName;
-    String m_apPassword;
 
     WebSocketsClient m_webSocketsClient;
 
@@ -80,6 +85,8 @@ private:
     int m_numAccessPoints;
 
     String m_addAccessPointName;
+    String m_addAccessPointUsername;
+    String m_addAccessPointIdentity;
 
     bool m_scanPending;
 };
