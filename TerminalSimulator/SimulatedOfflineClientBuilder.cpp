@@ -25,6 +25,7 @@
 #include "Timers/Factories/HighResTimerFactory.h"
 #include "TupleRoutes/NullTupleRoute.h"
 #include "UI/Strategies/Splash.h"
+#include "UI/Strategies/UpdateStrategy.h"
 #include "WorldLoaders/Factories/FileWorldLoaderFactory.h"
 #include "ConfigurationStore.h"
 #include "SimulatedOfflineClientBuilder.h"
@@ -215,6 +216,19 @@ void SimulatedOffline::buildSplash()
 void SimulatedOffline::buildMiniMapAssetLoaderFactory()
 {
     m_miniMapAssetLoaderFactory = new AssetLoaders::Factories::MiniMap( *m_miniMap );
+}
+
+void SimulatedOffline::buildUpdate()
+{
+    m_updateMemory = new Memories::File( "update.dat", Memories::File::flash, 0x200000 );
+    m_updateStrategy = new Strategies::Update( *m_inputDevice,
+                                               *m_windowManager,
+                                               _LargeDialogue,
+                                               *m_tupleRouter,
+                                               *m_platform,
+                                               *m_updateMemory,
+                                               *m_dialogue,
+                                               *m_timerFactory );
 }
 
 } // namespace ClientBuilders

@@ -30,6 +30,7 @@
 #include "TupleRoutes/ReadableWritableTupleRoute.h"
 #include "UI/Strategies/Splash.h"
 #include "UI/Strategies/TestStrategy.h"
+#include "UI/Strategies/UpdateStrategy.h"
 #include "WorldLoaders/Factories/Linda2WorldLoaderFactory.h"
 #include "ConfigurationStore.h"
 #include "KiamaFS.h"
@@ -308,6 +309,19 @@ void SimulatedOnline::buildMiniMapAssetLoaderFactory()
     m_miniMapAssetLoaderFactory = new AssetLoaders::Factories::Cache( *m_miniMapAssetLoaderBackingFactory,
                                                                       *m_miniMapAssetCache,
                                                                       false );
+}
+
+void SimulatedOnline::buildUpdate()
+{
+    m_updateMemory = new Memories::File( "update.dat", Memories::File::flash, 0x200000 );
+    m_updateStrategy = new Strategies::Update( *m_inputDevice,
+                                               *m_windowManager,
+                                               _LargeDialogue,
+                                               *m_tupleRouter,
+                                               *m_platform,
+                                               *m_updateMemory,
+                                               *m_dialogue,
+                                               *m_timerFactory );
 }
 
 } // namespace ClientBuilders

@@ -82,6 +82,7 @@ private:
     virtual void buildWorldLoaderFactory();
     virtual void buildSplash();
     virtual void buildMiniMapAssetLoaderFactory();
+    virtual void buildUpdate();
 
     Memory* m_configurationStoreMemory;
 
