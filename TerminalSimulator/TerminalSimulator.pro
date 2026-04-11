@@ -119,6 +119,7 @@ SOURCES += ../Agape/AssetLoaders/Caches/KiamaFSAssetCache.cpp \
            ../Agape/Session.cpp \
            ../Agape/String.cpp \
            ../Agape/StringConstants.cpp \
+           ../Agape/StringSerialiser.cpp \
            ../Agape/Terminal.cpp \
            ../Agape/Value.cpp \
            ../Agape/Warp.cpp \
