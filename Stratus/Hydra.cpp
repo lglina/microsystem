@@ -39,14 +39,18 @@ Hydra::~Hydra()
 
 void Hydra::addRoute( TupleRoute* route )
 {
+#ifdef LOG_STRATUS
     LOG_DEBUG( "Hydra: Adding route" );
+#endif
     std::scoped_lock lock( m_mutex );
     m_tupleRouter.addRoute( route, false );
 }
 
 void Hydra::removeRoute( TupleRoute* route )
 {
+#ifdef LOG_STRATUS
     LOG_DEBUG( "Hydra: Removing route" );
+#endif
     std::scoped_lock lock( m_mutex );
     m_tupleRouter.removeRoute( route );
 }
