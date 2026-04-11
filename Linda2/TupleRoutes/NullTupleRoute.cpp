@@ -25,10 +25,6 @@ bool Null::receiveTuple( Tuple& tuple )
     return false;
 }
 
-void Null::sendTuple( const Tuple& tuple )
-{
-}
-
 void Null::run()
 {
 }

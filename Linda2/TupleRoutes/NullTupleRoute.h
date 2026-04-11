@@ -22,7 +22,6 @@ public:
 
     virtual bool haveIncoming();
     virtual bool receiveTuple( Tuple& tuple );
-    virtual void sendTuple( const Tuple& tuple );
 
     virtual void run();
 
