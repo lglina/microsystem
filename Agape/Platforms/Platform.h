@@ -119,8 +119,8 @@ public:
 
     virtual String internalState() { return String(); };
 
-    //virtual int buildNumber() { return INT_MAX; }; // i.e. never update.
-    virtual int buildNumber() { return 0; }; // For testing.
+    virtual int buildNumber() { return INT_MAX; }; // i.e. never update.
+    //virtual int buildNumber() { return 0; }; // For testing.
 
     virtual void reset() {};
 
