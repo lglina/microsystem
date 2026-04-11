@@ -1,7 +1,7 @@
 #include "Loggers/Logger.h"
 #include "Utils/LiteStream.h"
 #include "Utils/StrToHex.h"
-#include "Stratus.h"
+#include "WebSockets.h"
 #include "WebSocketsConnection.h"
 
 #include <functional>
@@ -54,12 +54,11 @@ int WebSocketsConnection::read( char* data, int len )
 int WebSocketsConnection::write( const char* data, int len )
 {
 #ifdef LOG_WS
-    //LOG_DEBUG( "QtWebSocketsConnection: Writing" );
-    //hexDump( data, len );
-    LiteStream stream;
-    stream << "WS Write " << len;
-    LOG_DEBUG( stream.str() );
-    hexDump( data, len );
+    if( len > 0 )
+    {
+        LOG_DEBUG( "WebSocketsConnection: Writing" );
+        hexDump( data, len );
+    }
 #endif
 
     m_connection->send( data, len );
