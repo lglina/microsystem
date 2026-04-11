@@ -78,20 +78,26 @@ void TupleRoute::sendRemoveRoutingCriteriaRequest( const TupleRoutingCriteria& r
 
 void TupleRoute::addRoutingCriteria( const TupleRoutingCriteria& routingCriteria )
 {
+#if defined(LOG_TUPLES) || defined(LOG_TUPLES_BRIEF)
     LOG_DEBUG( "TupleRoute (" + m_routeName + "): Receiving and applying routing criteria" );
+#endif
     m_tupleRoutingCriteria.push_back( routingCriteria );
 }
 
 void TupleRoute::removeRoutingCriteria( const TupleRoutingCriteria& routingCriteria )
 {
+#if defined(LOG_TUPLES) || defined(LOG_TUPLES_BRIEF)
     LOG_DEBUG( "TupleRoute (" + m_routeName + "): Removing routing criteria" );
+#endif
     bool wasErased( false );
     Vector< TupleRoutingCriteria >::iterator it( m_tupleRoutingCriteria.begin() );
     for( ; it != m_tupleRoutingCriteria.end(); ++it )
     {
         if( *it == routingCriteria )
         {
+#if defined(LOG_TUPLES) || defined(LOG_TUPLES_BRIEF)
             LOG_DEBUG( "Removed" );
+#endif
             m_tupleRoutingCriteria.erase( it );
             wasErased = true;
             break;
@@ -100,7 +106,9 @@ void TupleRoute::removeRoutingCriteria( const TupleRoutingCriteria& routingCrite
 
     if( !wasErased )
     {
+#if defined(LOG_TUPLES) || defined(LOG_TUPLES_BRIEF)
         LOG_DEBUG( "Couldn't find criteria to remove !?" );
+#endif
     }
 }
 
