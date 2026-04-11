@@ -73,6 +73,8 @@ private:
     QTimer m_pongTimer;
 
     QTimer m_rxTimer;
+
+    bool m_isLocalhost;
 };
 
 } // namespace Network

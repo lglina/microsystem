@@ -42,7 +42,8 @@ QtWebSocketsConnection::QtWebSocketsConnection( const QUrl& url,
   m_platform( platform ),
   m_isOpen( false ),
   m_error( false ),
-  m_buffer( bufferSize )
+  m_buffer( bufferSize ),
+  m_isLocalhost( false )
 {
     LOG_DEBUG( "QtWebSocketsConnection: Connecting signals" );
     connect( &m_webSocket,
@@ -73,6 +74,9 @@ QtWebSocketsConnection::QtWebSocketsConnection( const QUrl& url,
 #else
     connect( &m_rxTimer, &QTimer::timeout, this, &QtWebSocketsConnection::onRXTimeout );
 #endif
+
+    m_isLocalhost = ( ( url.host() == "127.0.0.1" ) ||
+                      ( url.host() == "localhost" ) );
 
     LOG_DEBUG( "QtWebSocketsConnection: Opening" );
     QWebSocketHandshakeOptions handshakeOptions;
@@ -327,9 +331,15 @@ void QtWebSocketsConnection::onSslErrors( const QList< QSslError >& errors )
 {
     LOG_DEBUG( "QtWebSocketsConnection: SSL error" );
 
-    m_isOpen = false;
-    m_error = true;
-    //m_webSocket.ignoreSslErrors(); // DANGER!
+    if( !m_isLocalhost )
+    {
+        m_isOpen = false;
+        m_error = true;
+    }
+    else
+    {
+        m_webSocket.ignoreSslErrors(); // DANGER!
+    }
 }
 
 void QtWebSocketsConnection::onPong( quint64 elapsedTime, const QByteArray& payload )
