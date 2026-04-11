@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="65">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="LoadableFiles"
+                   displayName="Prebuilt Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="default" type="9">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <targetDevice>PIC32MM0256GPM064</targetDevice>
+        <targetHeader></targetHeader>
+        <targetPluginBoard></targetPluginBoard>
+        <platformTool>noID</platformTool>
+        <languageToolchain></languageToolchain>
+        <languageToolchainVersion></languageToolchainVersion>
+        <platform>2</platform>
+      </toolsSet>
+      <packs>
+        <pack name="PIC32MM-GPM-0XX_DFP" vendor="Microchip" version="1.4.156"/>
+      </packs>
+      <ScriptingSettings>
+      </ScriptingSettings>
+      <makefileType>
+        <makeTool>
+          <workingDirectory>.</workingDirectory>
+          <buildCommand>make</buildCommand>
+          <cleanCommand>make clean</cleanCommand>
+          <debugBuildCommand>make</debugBuildCommand>
+          <imageName>estelle</imageName>
+          <debugImageName>estelle</debugImageName>
+          <userIncludePaths></userIncludePaths>
+          <userMacros></userMacros>
+        </makeTool>
+      </makefileType>
+      <userMakefileProjectLoading>
+      </userMakefileProjectLoading>
+    </conf>
+  </confs>
+</configurationDescriptor>

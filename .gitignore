@@ -37,3 +37,10 @@ TerminalSimulator/snap-*.png
 *moc_*.cpp
 *moc_*.h
 defmplabxtrace.log*
+Client/build/
+Client/agape
+Client/agape.hex
+Client/mapfile.map
+Client/*.s
+Client/nbproject/private
+Client/Estelle/nbproject/private
