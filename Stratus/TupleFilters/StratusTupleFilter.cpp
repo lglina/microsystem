@@ -59,6 +59,13 @@ bool Stratus::permitIn( const Tuple& tuple )
 #endif
             permittedIn = true;
         }
+        else if( TupleRouter::sourceActor( tuple ) == _UpdateClient )
+        {
+#ifdef LOG_TUPLES
+            LOG_DEBUG( "TupleFilters::Stratus: Update requests permitted" );
+#endif
+            permittedIn = true;
+        }
         else
         {
             World::Coordinates coordinates( World::Coordinates::fromValue( tuple[_coordinates] ) );
@@ -72,11 +79,15 @@ bool Stratus::permitIn( const Tuple& tuple )
             }
             else if( !coordinates.m_worldID.empty() )
             {
+#ifdef LOG_TUPLES
                 LOG_DEBUG( "TupleFilters::Stratus: Forbidden for world ID " + coordinates.m_worldID );
+#endif
             }
             else
             {
+#ifdef LOG_TUPLES
                 LOG_DEBUG( "TupleFilters::Stratus: World ID not found in tuple. Forbidden." );
+#endif
             }
         }
     }
@@ -89,13 +100,15 @@ bool Stratus::permitIn( const Tuple& tuple )
     }
     else
     {
+#ifdef LOG_TUPLES
         LOG_DEBUG( "TupleFilters::Stratus: Tuple forbidden - no valid authentication." );
+#endif
     }
 
     return permittedIn;
 }
 
-bool Stratus::permitInDefault( const Tuple& tuple )
+bool Stratus::permitInDefault( const Tuple& tuple ) // In *from* default route.
 {
     bool permittedInDefault( false );
 
@@ -119,11 +132,15 @@ bool Stratus::permitInDefault( const Tuple& tuple )
         }
         else if( !coordinates.m_worldID.empty() )
         {
+#ifdef LOG_TUPLES
             LOG_DEBUG( "TupleFilters::Stratus: Forbidden for world ID " + coordinates.m_worldID );
+#endif
         }
         else
         {
+#ifdef LOG_TUPLES
             LOG_DEBUG( "TupleFilters::Stratus: World ID not found in tuple. Forbidden." );
+#endif
         }
     }
 
@@ -136,7 +153,9 @@ bool Stratus::permitForward( const Tuple& tuple )
 
     if( TupleRouter::tupleType( tuple ) == _Authenticate ) // Don't allow leaking of secrets!
     {
+#ifdef LOG_TUPLES
         LOG_DEBUG( "TupleFilters::Stratus: Not forwarding authentication request." );
+#endif
     }
     else
     {
@@ -151,18 +170,22 @@ bool Stratus::permitForward( const Tuple& tuple )
         }
         else if( !coordinates.m_worldID.empty() )
         {
+#ifdef LOG_TUPLES
             LOG_DEBUG( "TupleFilters::Stratus: Forwarding forbidden for world ID " + coordinates.m_worldID );
+#endif
         }
         else
         {
+#ifdef LOG_TUPLES
             LOG_DEBUG( "TupleFilters::Stratus: World ID not found in tuple. Forwarding forbidden." );
+#endif
         }
     }
 
     return permittedForward;
 }
 
-bool Stratus::permitForwardDefault( const Tuple& tuple )
+bool Stratus::permitForwardDefault( const Tuple& tuple ) // Forward *from* default route.
 {
     bool permittedForwardDefault( false );
 
@@ -185,7 +208,9 @@ bool Stratus::permitForwardDefault( const Tuple& tuple )
         }
         else
         {
+#ifdef LOG_TUPLES
             LOG_DEBUG( "TupleFilters::Stratus: Forwarding from default route forbidden - no valid authentication." );
+#endif
         }
     }
 
@@ -200,12 +225,34 @@ bool Stratus::permitOut( const Tuple& tuple )
     return true;
 }
 
-bool Stratus::permitOutDefault( const Tuple& tuple )
+bool Stratus::permitOutDefault( const Tuple& tuple ) // Out *to* default route.
 {
     bool permittedOutDefault( false );
 
+    // Permit all with coordinates for writable worlds.
     World::Coordinates coordinates( World::Coordinates::fromValue( tuple[_coordinates] ) );
     permittedOutDefault = m_authenticator.writableWorld( coordinates.m_worldID );
+
+    // Don't send out responses from our own handler responders, unless we want
+    // those responses to propagate to other clients in the same world. Note
+    // that other handlers will decline to send tuples to their clients that
+    // they don't have routing criteria for, but we want to prevent guff getting
+    // out to the world-global message bus as much as possible.
+    String sourceActor( TupleRouter::sourceActor( tuple ) );
+    if( ( sourceActor == _AssetLoaderResponder ) ||
+        ( sourceActor == _PresenceLoaderResponder ) ||
+        ( sourceActor == _SceneLoaderResponder ) )
+    {
+        String tupleType( TupleRouter::tupleType( tuple ) );
+        if( ( tupleType != _PresenceResponse ) &&
+            ( tupleType != _SceneResponse ) &&
+            ( tupleType != _SceneItemSaveAttributeResponse ) &&
+            ( tupleType != _SceneItemDeleteAttributesResponse ) &&
+            ( tupleType != _InvalidateCachedAsset ) )
+        {
+            permittedOutDefault = false;
+        }
+    }
 
     if( permittedOutDefault )
     {
@@ -215,7 +262,9 @@ bool Stratus::permitOutDefault( const Tuple& tuple )
     }
     else
     {
-        LOG_DEBUG( "TupleFilters::Stratus: Sending to default route forbidden - tuple for non-writable world or tuple has no coordinates" );
+#ifdef LOG_TUPLES
+        LOG_DEBUG( "TupleFilters::Stratus: Sending to default route forbidden - tuple for non-writable world, tuple has no coordinates or tuple is a local response" );
+#endif
     }
 
     return permittedOutDefault;
