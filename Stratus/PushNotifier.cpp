@@ -63,6 +63,7 @@ bool PushNotifier::accept( Tuple& tuple )
     String tupleType( TupleRouter::tupleType( tuple ) );
     if( tupleType == _ChatMessage )
     {
+#ifdef LOG_STRATUS
         LiteStream stream;
         stream << "PushNotifier: Received chat message from user with snowflake "
                << tuple[_user][_snowflake].toString()
@@ -71,10 +72,13 @@ bool PushNotifier::accept( Tuple& tuple )
                << ". Idle? "
                << (  isIdle() ? 1 : 0 );
         LOG_DEBUG( stream.str() );
+#endif
         if( !m_authenticator.isOurUser( tuple[_user][_snowflake] ) &&
             isIdle() )
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "PushNotifier: Sending chat notification" );
+#endif
             m_webSocketsConnection.sendOutOfBand( "notification.chat" );
         }
     }
@@ -83,7 +87,9 @@ bool PushNotifier::accept( Tuple& tuple )
         long long timeNow( (long long)( (double)tuple[_now]) );
         if( ( timeNow - m_lastCheckedTelegrams ) >= checkTelegramsPeriod )
         {
+#ifdef LOG_STRATUS
             LOG_DEBUG( "PushNotifier: Checking telegrams" );
+#endif
             TelegramLoader* telegramLoader( m_telegramLoaderFactory.makeLoader( String() ) );
             Map< String, int > numUnread;
             // Find unread for all worlds for all devices if Tela, as Tela
@@ -97,6 +103,7 @@ bool PushNotifier::accept( Tuple& tuple )
                     totalUnread += it->second;
                 }
 
+#ifdef LOG_STRATUS
                 LiteStream stream;
                 stream << "PushNotifier: Last unread telegrams "
                        << m_lastUnreadTelegrams
@@ -105,12 +112,15 @@ bool PushNotifier::accept( Tuple& tuple )
                        << ". Idle? "
                        << (  isIdle() ? 1 : 0 );
                 LOG_DEBUG( stream.str() );
+#endif
 
                 if( ( m_lastUnreadTelegrams != -1 ) &&
                     ( totalUnread != m_lastUnreadTelegrams ) &&
                     isIdle() )
                 {
+#ifdef LOG_STRATUS
                     LOG_DEBUG( "PushNotifier: Sending telegram notification" );
+#endif
                     m_webSocketsConnection.sendOutOfBand( "notification.telegram" );
                 }
 

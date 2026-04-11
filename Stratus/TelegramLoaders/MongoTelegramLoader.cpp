@@ -40,7 +40,9 @@ Mongo::Mongo( const String& recipientSnowflake,
 
 bool Mongo::load( Vector< Telegram >& telegrams )
 {
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Loading telegrams for " + m_recipientSnowflake );
+#endif
 
     bool success( true );
 
@@ -60,8 +62,10 @@ bool Mongo::load( Vector< Telegram >& telegrams )
         mongocxx::cursor::iterator it( telegramCursor.begin() );
         for( ; it != telegramCursor.end(); ++it )
         {
+#ifdef LOG_LOADERS
             LOG_DEBUG( "MongoTelegramLoader: Loaded telegram." );
             LOG_DEBUG( bsoncxx::to_json( *it ).c_str() );
+#endif
             Value telegramValue( DocumentBuilder::unbuild( *it ) );
             Telegram telegram( Telegram::fromValue( telegramValue ) );
             telegrams.push_back( telegram );
@@ -78,7 +82,9 @@ bool Mongo::load( Vector< Telegram >& telegrams )
 
 bool Mongo::loadSent( Vector< Telegram >& telegrams )
 {
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Loading sent telegrams for " + m_recipientSnowflake );
+#endif
 
     bool success( true );
 
@@ -98,8 +104,10 @@ bool Mongo::loadSent( Vector< Telegram >& telegrams )
         mongocxx::cursor::iterator it( telegramCursor.begin() );
         for( ; it != telegramCursor.end(); ++it )
         {
+#ifdef LOG_LOADERS
             LOG_DEBUG( "MongoTelegramLoader: Loaded sent telegram." );
             LOG_DEBUG( bsoncxx::to_json( *it ).c_str() );
+#endif
             Value telegramValue( DocumentBuilder::unbuild( *it ) );
             Telegram telegram( Telegram::fromValue( telegramValue ) );
             telegrams.push_back( telegram );
@@ -119,7 +127,9 @@ bool Mongo::send( const Telegram& telegram )
     // FIXME: Should check for the rare case of duplicate telegram snowflake
     // on insert. Speaking of which, we should do this in all cases where
     // snowflake collision might occur (due to re-use of machine numbers).
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Saving (sending) telegram" );
+#endif
 
     bool success( true );
 
@@ -143,7 +153,9 @@ bool Mongo::send( const Telegram& telegram )
 
 bool Mongo::markRead( const Telegram& telegram )
 {
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Marking telegram read" );
+#endif
 
     bool success( true );
 
@@ -182,7 +194,9 @@ bool Mongo::markRead( const Telegram& telegram )
 
 bool Mongo::erase( const Telegram& telegram )
 {
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Deleting telegram" );
+#endif
 
     bool success( true );
 
@@ -216,7 +230,9 @@ bool Mongo::erase( const Telegram& telegram )
 
 bool Mongo::unread( Map< String, int >& numUnread, bool allDevices )
 {
+#ifdef LOG_LOADERS
     LOG_DEBUG( "MongoTelegramLoader: Looking for unread telegrams" );
+#endif
 
     bool success( true );
 
