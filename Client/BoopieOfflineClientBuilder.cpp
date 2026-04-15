@@ -263,7 +263,7 @@ void BoopieOffline::buildSplash()
                                                *m_platform,
                                                *m_flash,
                                                *m_midiPlayer,
-                                               *m_entropySource,
+                                               *m_keyEntropySource,
                                                *m_timerFactory );
 }
 
