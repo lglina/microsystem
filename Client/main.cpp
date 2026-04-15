@@ -153,7 +153,7 @@ int main( int argc, char** argv )
     PICSerial debugSerial( 2, 115200, 768, 16 );
     Logger::setInstance( new Loggers::Serial( debugSerial ) );
 #elif defined(__32MZ2048EFG064__)
-    PICSerial debugSerial( 5, 115200, 768, 16 );
+    PICSerial debugSerial( 5, 115200, 1024, 16 );
     Logger::setInstance( new Loggers::Serial( debugSerial ) );
 #endif
     LOG_DEBUG( "Boopie starting" );
