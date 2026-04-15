@@ -146,7 +146,8 @@ void PlatformController::doSleep()
     OSCCONbits.SLPEN = 1; // Arm sleep mode.
     SYSKEY = 0x00000000; // Lock
 
-    PORTBCLR = _PORTB_RB7_MASK; // Disable sensors.
+    LATBCLR = _LATB_LATB7_MASK; // Disable sensors.
+    LATBSET = _LATB_LATB10_MASK; // Force alert LED off.
 
     __builtin_enable_interrupts();
 
@@ -156,7 +157,7 @@ void PlatformController::doSleep()
 
     m_sleepTimer->reset();
 
-    PORTBSET = _PORTB_RB7_MASK; // Enable sensors.
+    LATBSET = _LATB_LATB7_MASK; // Enable sensors.
 }
 
 } // namespace Agape
