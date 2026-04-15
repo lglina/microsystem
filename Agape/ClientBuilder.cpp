@@ -286,7 +286,8 @@ Client* ClientBuilder::build( Chooser& chooser )
     m_vrTime = new UI::VRTime( *m_windowManager, // Build before clock, in case we're using Clocks::VRTime.
                                _Navigation,
                                *m_tupleRouter,
-                               *m_functionDispatcher );
+                               *m_functionDispatcher,
+                               *m_timerFactory );
     buildClock();
 
     LOG_DEBUG( "Building snowflake" );
