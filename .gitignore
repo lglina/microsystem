@@ -10,6 +10,9 @@ Client/build/
 Client/agape
 Client/agape.hex
 Client/agape-merged.hex
+Client/agape-update.bin
+Client/agape-update.hex
+Client/agape-update.hxl
 Client/mapfile.map
 MIDIConverter/MIDIConverter
 Stratus/build/
