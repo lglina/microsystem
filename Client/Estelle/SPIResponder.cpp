@@ -32,7 +32,6 @@ void SPIResponder::run()
 {
     if( !m_spiController.eof() )
     {
-        LATBbits.LATB7 = 1;
 #ifdef LOG_SPI
         m_warp.engage();
 #endif
@@ -102,7 +101,6 @@ void SPIResponder::run()
             LOG_DEBUG( "SPIResponder: Read timeout or request length invalid" );
         }
 
-        LATBbits.LATB7 = 0;
 #ifdef LOG_SPI
         m_warp.report();
 #endif
