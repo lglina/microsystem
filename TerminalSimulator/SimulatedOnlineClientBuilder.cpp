@@ -239,7 +239,7 @@ void SimulatedOnline::buildTelegramAssetLoaderFactory()
 void SimulatedOnline::buildMIDIAssetLoaderFactory()
 {
     // FIXME: Load from server.
-    m_midiAssetLoaderFactory = new AssetLoaders::Factories::File( "MIDI", "fmid" );
+    m_midiAssetLoaderFactory = new AssetLoaders::Factories::File( "Sounds", "fmid" );
 }
 
 void SimulatedOnline::buildSceneLoaderFactory()
