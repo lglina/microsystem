@@ -1,4 +1,6 @@
 #include "Clocks/Clock.h"
+#include "Timers/Factories/TimerFactory.h"
+#include "Timers/Timer.h"
 #include "Utils/LiteStream.h"
 #include "FunctionDispatcher.h"
 #include "String.h"
@@ -12,6 +14,11 @@
 
 using namespace Agape::Linda2;
 
+namespace
+{
+    const int waitTimeout( 10000 ); // ms to wait for a Time tuple to produce a valid time for VRTimeClock.
+} // Anonymous namespace
+
 namespace Agape
 {
 
@@ -21,11 +28,13 @@ namespace UI
 VRTime::VRTime( WindowManager& windowManager,
                 const String& windowName,
                 TupleRouter& tupleRouter,
-                FunctionDispatcher& functionDispatcher ) :
+                FunctionDispatcher& functionDispatcher,
+                Timers::Factory& timerFactory ) :
   Native( "MyClock" ),
   m_tupleRouter( tupleRouter ),
   m_functionDispatcher( functionDispatcher ),
   m_terminal( nullptr ),
+  m_timer( timerFactory.makeTimer() ),
   m_registered( false ),
   m_haveTime( false ),
   m_running( false ),
@@ -47,6 +56,8 @@ VRTime::~VRTime()
     // this then we're also disconneting/disconnected from the server anyway.
     m_tupleRouter.deregisterActor( this );
     m_functionDispatcher.deregisterActor( this );
+
+    delete( m_timer );
 }
 
 void VRTime::doRegister()
@@ -115,7 +126,10 @@ bool VRTime::haveTime()
 
 void VRTime::waitForTime()
 {
-    while( m_registered && !m_haveTime )
+    m_timer->reset();
+    while( m_registered &&
+           !m_haveTime &&
+           ( m_timer->ms() < waitTimeout ) )
     {
         m_tupleRouter.run(); // Run to receive time tuple. FIXME: Timeout?
     }

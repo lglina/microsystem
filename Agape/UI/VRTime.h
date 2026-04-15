@@ -21,10 +21,16 @@ namespace Linda2
 class TupleRouter;
 } // namespace Linda2
 
+namespace Timers
+{
+class Factory;
+} // namespace Timers
+
 using namespace Linda2;
 
 class String;
 class Terminal;
+class Timer;
 class Value;
 class WindowManager;
 
@@ -39,7 +45,8 @@ public:
     VRTime( WindowManager& windowManager,
             const String& windowName,
             TupleRouter& tupleRouter,
-            FunctionDispatcher& functionDispatcher );
+            FunctionDispatcher& functionDispatcher,
+            Timers::Factory& timerFactory );
     virtual ~VRTime();
 
     void doRegister();
@@ -61,6 +68,8 @@ private:
     TupleRouter& m_tupleRouter;
     FunctionDispatcher& m_functionDispatcher;
     Terminal* m_terminal;
+
+    Timer* m_timer;
 
     bool m_registered;
     bool m_haveTime;
