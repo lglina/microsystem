@@ -303,7 +303,7 @@ void PlatformUI::loadAndSetKeyboardBrightness()
         const Value& platformValue( m_configurationStore.get( _platform ) );
         if( platformValue.hasValue( _keyboardBrightness ) )
         {
-            m_platform.setScreenBrightness( platformValue[_keyboardBrightness] );
+            m_platform.setKeyboardBrightness( platformValue[_keyboardBrightness] );
         }
     }
 }
