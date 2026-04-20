@@ -14,6 +14,8 @@ Client/agape-update.bin
 Client/agape-update.hex
 Client/agape-update.hxl
 Client/mapfile.map
+Client/releasedev.sh
+Client/releasestable.sh
 MIDIConverter/MIDIConverter
 Stratus/build/
 Stratus/cert.pem
