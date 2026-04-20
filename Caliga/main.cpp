@@ -236,7 +236,7 @@ int main( int argc, char** argv )
     LOG_DEBUG( uintToHex( updateCRC ) );
     LOG_DEBUG( uintToHex( verifyCRC ) );
 
-    if( verifyCRC == updateCRC )
+    if( verifyCRC != updateCRC )
     {
         // Erase last sector so we don't attempt to program again.
         updateMemory.erase( updateMemory.size() - updateMemory.sectorSize(), updateMemory.sectorSize() );

@@ -318,8 +318,7 @@ bool Update::needUpdate()
         LiteStream stream;
         stream << "Update: Retrieved version. Current version: " << m_currentVersion << " New version: " << m_newVersion;
         LOG_DEBUG( stream.str() );
-        //return( m_currentVersion < m_newVersion );
-        return true; // FIXME: TESTING. REMOVE.
+        return( m_currentVersion < m_newVersion );
     }
     else
     {
