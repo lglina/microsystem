@@ -314,9 +314,13 @@ build/%.d: %.c
 	 sed 's,$(notdir $*)\.o[ :]*,$*.o $@ : ,g' < $@.$$$$ > $@; \
 	 rm -f $@.$$$$
 
-.PHONY: clean
+.PHONY: clean rebuild
 clean:
 	rm -rf build/ $(EXECUTABLE) $(HEXFILE) $(MERGEDHEXFILE) $(UPDATEHEXFILE) $(UPDATELOGFILE) $(UPDATEBINFILE) *.o *.s *.map
+
+rebuild:
+	$(MAKE) clean
+	$(MAKE) all
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
