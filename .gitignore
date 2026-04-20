@@ -24,6 +24,7 @@ Stratus/mongodb-secret*
 TerminalSimulator/build/
 TerminalSimulator/Programs/
 TerminalSimulator/Scenes/
+TerminalSimulator/Sounds/promenade.fmid
 TerminalSimulator/Telegrams/
 TerminalSimulator/Worlds/
 TerminalSimulator/config-offline.dat
