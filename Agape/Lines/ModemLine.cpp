@@ -57,6 +57,7 @@ Vector< Line::ConfigOption > Modem::getConfigOptions()
     Vector< ConfigOption > configOptions;
 
     String command( "AT+GCONF?\r\n" );
+    m_lineDriver.flushInput();
     m_lineDriver.write( command.c_str(), command.length() );
 
     String response;
@@ -102,6 +103,7 @@ void Modem::setConfigOption( const String& name, const String& value )
     LiteStream commandStream;
     commandStream << "AT+GCONF=" << name << "=" << value << "\r\n";
     String command( commandStream.str() );
+    m_lineDriver.flushInput();
     m_lineDriver.write( command.c_str(), command.length() );
 
     LOG_DEBUG( "Set config option:" );
@@ -121,8 +123,12 @@ void Modem::connect()
         return;
     }
 
+    // Note: We always flushInput() before write()ing commands, in case
+    // we're desynchronised with the modem and an older response is already
+    // in the input buffer.
     LOG_DEBUG( "Modem: Send AT+XCONN" );
     String command( "AT+XCONN\r\n" );
+    m_lineDriver.flushInput();
     m_lineDriver.write( command.c_str(), command.length() );
 
     LOG_DEBUG( "Modem: Wait for response" );
@@ -149,6 +155,7 @@ void Modem::dial( const String& number )
     commandStream << "ATD" << number << "\r\n";
     String command( commandStream.str() );
     LOG_DEBUG( "Modem: Send " + command );
+    m_lineDriver.flushInput();
     m_lineDriver.write( command.c_str(), command.length() );
 
     LOG_DEBUG( "Modem: Wait for response" );
@@ -181,10 +188,11 @@ struct Line::LineStatus Modem::getLineStatus()
     }
 
     m_lineStatus.m_carrier = m_lineDriver.dataCarrierDetect();
-    if( !m_lineStatus.m_carrier ) m_lineStatus.m_secure = false;
-
     if( !m_lineStatus.m_carrier )
     {
+        m_lineStatus.m_secure = false;
+        m_lineDriver.dataTerminalReady( false ); // Hold in command mode (prevents WiFi modem websockets auto reconnect).
+
         // In command mode, so we can periodically poll the line status.
         // (E.g. for WiFi, whether we're connected to an AP.)
         ++m_lineStatusCounter;
@@ -192,6 +200,7 @@ struct Line::LineStatus Modem::getLineStatus()
         {
             m_lineStatusCounter = 0;
             String command( "AT+XCONN?\r\n" );
+            m_lineDriver.flushInput();
             m_lineDriver.write( command.c_str(), command.length() );
 
             String response;
