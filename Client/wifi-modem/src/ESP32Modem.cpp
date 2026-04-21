@@ -551,10 +551,10 @@ bool ESP32Modem::deleteAccessPoint( const String& name )
         {
             for( int j = i + 1; j < m_numAccessPoints; ++j )
             {
-                ::strncpy( m_accessPoints[i - 1].m_name, m_accessPoints[i].m_name, FIELD_LENGTH );
-                ::strncpy( m_accessPoints[i - 1].m_password, m_accessPoints[i].m_password, FIELD_LENGTH );
-                ::strncpy( m_accessPoints[i - 1].m_username, m_accessPoints[i].m_username, FIELD_LENGTH );
-                ::strncpy( m_accessPoints[i - 1].m_identity, m_accessPoints[i].m_identity, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[j - 1].m_name, m_accessPoints[j].m_name, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[j - 1].m_password, m_accessPoints[j].m_password, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[j - 1].m_username, m_accessPoints[j].m_username, FIELD_LENGTH );
+                ::strncpy( m_accessPoints[j - 1].m_identity, m_accessPoints[j].m_identity, FIELD_LENGTH );
             }
             --m_numAccessPoints;
             success = true;
