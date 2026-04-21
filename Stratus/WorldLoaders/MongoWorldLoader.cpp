@@ -196,6 +196,10 @@ bool Mongo::load( World::Metadata& metadata, String& reason )
     LOG_DEBUG( "MongoWorldLoader: Loading world." );
 #endif
 
+#ifdef LOCUST
+    return true;
+#endif
+
     bool success( true );
 
     try
