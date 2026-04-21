@@ -72,7 +72,9 @@ void PlatformController::run()
         m_holdingReset = false;
     }
 
-    if( !m_powerOn && ( m_sleepTimer->ms() >= sleepTime ) )
+    if( !m_powerOn &&
+        ( m_sleepTimer->ms() >= sleepTime ) &&
+        m_inputDevice.canEscSleep() )
     {
         doSleep();
     }
