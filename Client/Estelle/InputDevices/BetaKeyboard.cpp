@@ -292,8 +292,8 @@ void BetaKeyboard::prepareEscSleep()
     CNFAbits.CNFA0 = 0; // Clear previously detected edge.
     IFS0bits.CNAIF = 0;
     CNCONAbits.CNSTYLE = 1; // < Edge detect mode.
-    CNEN1Abits.CNIE1A0 = 1; // \ Detect negative-going edge.
-    CNEN0Abits.CNIE0A0 = 0; // / (Esc closes A0 pulled-up input to A8 at GND.)
+    CNEN1Abits.CNIE1A0 = 1; // \ Detect positive or negative-going edge.
+    CNEN0Abits.CNIE0A0 = 1; // / (Esc closes A0 pulled-up input to A8 at GND.)
     IEC0bits.CNAIE = 1;
     __builtin_enable_interrupts();
 }
