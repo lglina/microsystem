@@ -18,6 +18,7 @@ public:
     virtual int open();
     virtual int read( char* data, int len );
     virtual int write( const char* data, int len );
+    virtual bool error();
 
     virtual bool dataCarrierDetect();
     virtual void dataTerminalReady( bool ready );

@@ -38,6 +38,11 @@ int PICSerial::write( const char* data, int len )
     return m_picSerial.write( data, len );
 }
 
+bool PICSerial::error()
+{
+    return !dataCarrierDetect();
+}
+
 bool PICSerial::dataCarrierDetect()
 {
     // FIXME: Should DCD and DTR functions be moved into PICSerial.c?
