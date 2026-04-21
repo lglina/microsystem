@@ -31,6 +31,8 @@ public:
     virtual void run();
 
     bool escHeld();
+
+    bool canEscSleep();
     void prepareEscSleep();
     void afterEscSleep();
 

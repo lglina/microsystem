@@ -282,6 +282,11 @@ bool BetaKeyboard::escHeld()
     return false;
 }
 
+bool BetaKeyboard::canEscSleep()
+{
+    return !m_escPressed;
+}
+
 void BetaKeyboard::prepareEscSleep()
 {
     // Assume LATA[8] = 0 and CNPUA[0] = 1.
