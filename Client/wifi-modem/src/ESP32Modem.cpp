@@ -33,7 +33,11 @@ namespace
     const uint32_t pingInterval( 30000 ); // ms between WS ping.
     const uint32_t pongTimeout( 10000 ); // ms to wait for WS pong.
     const uint32_t disconnectTimeoutCount( 3 ); // No. of missed pongs before disconnect.
-    const uint32_t reconnectInterval( 10000 ); // ms to wait between reconnect attempts.
+    const uint32_t reconnectInterval( 120000 ); // ms to wait between reconnect attempts.
+
+    // N.B. Make the reconnect interval quite long as we expect the DTE to sense
+    // carrier loss and drop DTR, having us tear down the websockets connection
+    // and go back to command mode to wait for the DTE to dial again.
 
     const uint8_t notDCDPin( 0 );
     const uint8_t notDTRPin( 1 );
