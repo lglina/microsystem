@@ -20,6 +20,9 @@ public:
     virtual int write( const char* data, int len );
     virtual bool error();
 
+    virtual void flushInput();
+    virtual void flushOutput();
+
     virtual bool dataCarrierDetect();
     virtual void dataTerminalReady( bool ready );
 

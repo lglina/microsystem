@@ -40,7 +40,21 @@ int PICSerial::write( const char* data, int len )
 
 bool PICSerial::error()
 {
+    // We're being used by ReadableWritableTupleRoute. Setting error when
+    // carrier is dropped indicates to TupleRouter (via TupleRoute) that
+    // there's no point sending anything else until we reconnect. This avoids
+    // long lockups for the user and lets the user run offline/disconnected.
     return !dataCarrierDetect();
+}
+
+void PICSerial::flushInput()
+{
+    m_picSerial.flushInput();
+}
+
+void PICSerial::flushOutput()
+{
+    m_picSerial.flushOutput();
 }
 
 bool PICSerial::dataCarrierDetect()
