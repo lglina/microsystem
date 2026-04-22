@@ -55,7 +55,7 @@ int main( int argc, char** argv )
     Logger::setInstance( new Loggers::Stream );
 
     LOG_DEBUG( "TerminalSimulator starting" );
-    LOG_DEBUG( "(C) Lauren Glina 2019-2025" );
+    LOG_DEBUG( "(C) Lauren Glina 2019-2026" );
 
     QApplication app( argc, argv );
     
