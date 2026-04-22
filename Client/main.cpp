@@ -157,7 +157,7 @@ int main( int argc, char** argv )
     Logger::setInstance( new Loggers::Serial( debugSerial ) );
 #endif
     LOG_DEBUG( "Boopie starting" );
-    LOG_DEBUG( "(C) Lauren Glina 2019-2025" );
+    LOG_DEBUG( "(C) Lauren Glina 2019-2026" );
 
     String initialChoice( "Online" );
     Chooser chooser;
