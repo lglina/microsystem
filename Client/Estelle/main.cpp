@@ -106,7 +106,7 @@ int main( int argc, char** argv )
     __builtin_enable_interrupts();
 
     LOG_DEBUG( "Estelle starting" );
-    LOG_DEBUG( "(C) Lauren Glina 2019-2025" );
+    LOG_DEBUG( "(C) Lauren Glina 2019-2026" );
 
     EstelleBuilder estelleBuilder;
     Estelle* estelle( nullptr );
