@@ -33,11 +33,10 @@ namespace
     const uint32_t pingInterval( 30000 ); // ms between WS ping.
     const uint32_t pongTimeout( 10000 ); // ms to wait for WS pong.
     const uint32_t disconnectTimeoutCount( 3 ); // No. of missed pongs before disconnect.
-    const uint32_t reconnectInterval( 120000 ); // ms to wait between reconnect attempts.
-
-    // N.B. Make the reconnect interval quite long as we expect the DTE to sense
-    // carrier loss and drop DTR, having us tear down the websockets connection
-    // and go back to command mode to wait for the DTE to dial again.
+    //const uint32_t reconnectInterval( 10000 ); // ms to wait between reconnect attempts.
+    // Note: There seems to be a bug in WebSocketsClient where the reconnect
+    // delay happens at the start of the initial connection. Leave it set to
+    // the default (500ms) for now.
 
     const uint8_t notDCDPin( 0 );
     const uint8_t notDTRPin( 1 );
@@ -54,6 +53,7 @@ ESP32Modem* ESP32Modem::s_instance( nullptr );
 ESP32Modem::ESP32Modem() :
   m_wifiMulti( nullptr ),
   m_carrier( false ),
+  m_wsDidDisconnect( false ),
   m_numAccessPoints( 0 ),
   m_scanPending( false )
 {
@@ -85,7 +85,7 @@ ESP32Modem::ESP32Modem() :
     Serial1.setTimeout(10);
 
     Serial.println( "Micro System WiFi Modem v1.0" );
-    Serial.println( "(C) Lauren Glina 2023-2025" );
+    Serial.println( "(C) Lauren Glina 2023-2026" );
 
     WiFi.mode( WIFI_STA );
     WiFi.setMinSecurity( WIFI_AUTH_OPEN );
@@ -132,6 +132,10 @@ void ESP32Modem::handleATCommand()
     {
         connectWiFi();
     }
+    else if( command == "AT+XDCON\r" )
+    {
+        disconnectWiFi();
+    }
     else if( command.startsWith( "ATD" ) )
     {
         dial( command );
@@ -166,10 +170,20 @@ void ESP32Modem::handleData()
 
     if( WiFi.status() != WL_CONNECTED )
     {
+        // WiFi dropped
         m_webSocketsClient = WebSocketsClient();
         m_carrier = false;
         digitalWrite( notDCDPin, 1 );
         Serial.println( "WiFi disconnected" );
+        Serial1.println( "NO CARRIER" );
+    }
+    else if( m_wsDidDisconnect )
+    {
+        // Websockets disconnected. Reset client to prevent reconnects.
+        m_webSocketsClient = WebSocketsClient();
+        m_carrier = false;
+        digitalWrite( notDCDPin, 1 );
+        Serial.println( "Websockets disconnected" );
         Serial1.println( "NO CARRIER" );
     }
     else if( digitalRead( notDTRPin ) == 1 )
@@ -361,10 +375,14 @@ void ESP32Modem::connectWiFi()
 
     if( WiFi.status() != WL_CONNECTED )
     {
-        if( m_wifiMulti != nullptr )
+        if( m_wifiMulti )
         {
             delete( m_wifiMulti );
+            m_wifiMulti = nullptr;
         }
+
+        WiFi.disconnect();
+
 #ifdef ESP8266
         m_wifiMulti = new ESP8266WiFiMulti;
 #else
@@ -392,6 +410,21 @@ void ESP32Modem::connectWiFi()
 
     Serial.println( "WiFi Connect error" );
     Serial1.println( "ERROR" );
+}
+
+void ESP32Modem::disconnectWiFi()
+{
+    Serial.println( "Disconnecting WiFi" );
+
+    if( m_wifiMulti )
+    {
+        delete( m_wifiMulti );
+        m_wifiMulti = nullptr;
+    }
+
+    WiFi.disconnect();
+
+    Serial1.println( "OK" );
 }
 
 void ESP32Modem::dial( const String& command )
@@ -432,8 +465,10 @@ void ESP32Modem::dial( const String& command )
 
 bool ESP32Modem::connectWebSockets( const String& address, int port )
 {
+    m_wsDidDisconnect = false;
+
     m_webSocketsClient.enableHeartbeat( pingInterval, pongTimeout, disconnectTimeoutCount );
-    m_webSocketsClient.setReconnectInterval( reconnectInterval );
+    //m_webSocketsClient.setReconnectInterval( reconnectInterval ); // Don't set for now - see comment at top of file.
     m_webSocketsClient.beginSSL( address.c_str(), port, "/", "", "Linda2" );
     m_webSocketsClient.onEvent( ESP32Modem::webSocketsEvent );
 
@@ -526,14 +561,28 @@ bool ESP32Modem::addAccessPoint( const String& name, const String& password, con
 {
     Serial.print( "Adding access point " );
     Serial.println( name );
-    if( m_numAccessPoints < MAX_APS )
+    int currentIdx( m_numAccessPoints );
+    for( int i = 0; i < m_numAccessPoints; ++i )
     {
-        ::strncpy( m_accessPoints[m_numAccessPoints].m_name, name.c_str(), FIELD_LENGTH );
-        ::strncpy( m_accessPoints[m_numAccessPoints].m_password, password.c_str(), FIELD_LENGTH );
-        ::strncpy( m_accessPoints[m_numAccessPoints].m_username, username.c_str(), FIELD_LENGTH );
-        ::strncpy( m_accessPoints[m_numAccessPoints].m_identity, identity.c_str(), FIELD_LENGTH );
-        ++m_numAccessPoints;
-        
+        if( ::strncmp( m_accessPoints[i].m_name, name.c_str(), FIELD_LENGTH ) == 0 )
+        {
+            currentIdx = i; // Modifying existing
+            break;
+        }
+    }
+
+    if( !name.isEmpty() && ( currentIdx < MAX_APS ) )
+    {
+        ::strncpy( m_accessPoints[currentIdx].m_name, name.c_str(), FIELD_LENGTH );
+        ::strncpy( m_accessPoints[currentIdx].m_password, password.c_str(), FIELD_LENGTH );
+        ::strncpy( m_accessPoints[currentIdx].m_username, username.c_str(), FIELD_LENGTH );
+        ::strncpy( m_accessPoints[currentIdx].m_identity, identity.c_str(), FIELD_LENGTH );
+
+        if( currentIdx == m_numAccessPoints ) // Adding new
+        {
+            ++m_numAccessPoints;
+        }
+
         return true;
     }
 
@@ -576,8 +625,7 @@ void ESP32Modem::_webSocketsEvent( WStype_t type, uint8_t* payload, size_t lengt
     case WStype_DISCONNECTED:
         if( m_carrier )
         {
-            m_carrier = false;
-            digitalWrite( notDCDPin, 1 );
+            m_wsDidDisconnect = true;
             Serial.println( "WS Ev: Disconnected" );
             Serial1.println( "NO CARRIER" );
         }
@@ -585,8 +633,7 @@ void ESP32Modem::_webSocketsEvent( WStype_t type, uint8_t* payload, size_t lengt
     case WStype_ERROR:
         if( m_carrier )
         {
-            m_carrier = false;
-            digitalWrite( notDCDPin, 1 );
+            m_wsDidDisconnect = true;
             Serial.println( "WS Ev: Error" );
             Serial1.println( "NO CARRIER" );
         }

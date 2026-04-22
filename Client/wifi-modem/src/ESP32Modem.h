@@ -53,6 +53,7 @@ private:
     void setConfigOptions( const String& command );
     void getWiFiStatus();
     void connectWiFi();
+    void disconnectWiFi();
     void dial( const String& command );
     
     bool connectWebSockets( const String& address, int port );
@@ -78,6 +79,7 @@ private:
 #endif
 
     bool m_carrier;
+    bool m_wsDidDisconnect;
 
     WebSocketsClient m_webSocketsClient;
 
