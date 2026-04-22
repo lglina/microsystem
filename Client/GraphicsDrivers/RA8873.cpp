@@ -28,7 +28,7 @@ namespace
     const int _glyphHeight( 16 );
     const int _glyphWidth( 8 );
 
-    /* Required Notice: */ const String copyright( "(C) Lauren Glina 2019-2025" );
+    /* Required Notice: */ const String copyright( "(C) Lauren Glina 2019-2026" );
 
     // For panic screen
     const int sadAgapeHeight( 8 );
