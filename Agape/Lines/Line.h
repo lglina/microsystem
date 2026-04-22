@@ -81,6 +81,7 @@ public:
     virtual void setConfigOption( const String& name, const String& value ) = 0;
 
     virtual void connect() = 0;
+    virtual void disconnect() {};
     virtual void registerNumber( const String& number ) = 0;
 
     virtual void dial( const String& number ) = 0;
