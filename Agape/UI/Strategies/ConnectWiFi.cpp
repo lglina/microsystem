@@ -172,7 +172,7 @@ void ConnectWiFi::run()
         case network:
             if( c == '\n' )
             {
-                setNetwork();
+                getAPName();
 
                 m_state = password;
 
@@ -213,6 +213,7 @@ void ConnectWiFi::run()
         case password:
             if( c == '\n' )
             {
+                setAPName();
                 setEnterpriseCredentials();
                 setPassword();
 
@@ -358,6 +359,7 @@ void ConnectWiFi::drawList()
 
 void ConnectWiFi::drawScanning()
 {
+    m_line.disconnect(); // Ensure we're not connected or trying to reconnect.
     m_line.setConfigOption( _Access_Point_Scan, "scan" ); // Initiate scan.
     drawPendingScan();
 }
@@ -570,15 +572,16 @@ void ConnectWiFi::deleteNetwork()
 {
     if( m_currentForm != nullptr )
     {
+        m_line.disconnect();
         m_line.setConfigOption( _Delete_Access_Point_Name, m_currentForm->getFieldContents( _My_WiFi_Networks ) );
     }
 }
 
-void ConnectWiFi::setNetwork()
+void ConnectWiFi::getAPName()
 {
     if( m_currentForm != nullptr )
     {
-        m_line.setConfigOption( _Add_Access_Point_Name, m_currentForm->getFieldContents( _Network ) );
+        m_apName = m_currentForm->getFieldContents( _Network );
     }
 }
 
@@ -594,6 +597,11 @@ bool ConnectWiFi::isEnterprise()
     }
 
     return false;
+}
+
+void ConnectWiFi::setAPName()
+{
+    m_line.setConfigOption( _Add_Access_Point_Name, m_apName );
 }
 
 void ConnectWiFi::setPassword()

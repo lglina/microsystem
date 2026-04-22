@@ -79,8 +79,11 @@ private:
     void closeForm();
 
     void deleteNetwork();
-    void setNetwork();
+    void getAPName();
+
     bool isEnterprise();
+
+    void setAPName();
     void setPassword();
     void setEnterpriseCredentials();
     void connect();
@@ -102,6 +105,8 @@ private:
     Forms::Form* m_currentForm;
 
     bool m_addOnly;
+
+    String m_apName;
 };
 
 } // namespace Strategies
