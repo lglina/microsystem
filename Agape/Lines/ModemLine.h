@@ -26,6 +26,7 @@ public:
     virtual void setConfigOption( const String& name, const String& value );
 
     virtual void connect();
+    virtual void disconnect();
     virtual void registerNumber( const String& number );
 
     virtual void dial( const String& number );

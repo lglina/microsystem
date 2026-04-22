@@ -137,6 +137,25 @@ void Modem::connect()
     LOG_DEBUG( "Modem: Response: " + response );
 }
 
+void Modem::disconnect()
+{
+    LOG_DEBUG( "Modem: Disconnecting" );
+    if( !m_isOpen )
+    {
+        return;
+    }
+
+    LOG_DEBUG( "Modem: Send AT+XDCON" );
+    String command( "AT+XDCON\r\n" );
+    m_lineDriver.flushInput();
+    m_lineDriver.write( command.c_str(), command.length() );
+
+    LOG_DEBUG( "Modem: Wait for response" );
+    String response;
+    readLine( response, longReadTimeout ); // OK or ERROR. Allow a longer timeout
+    LOG_DEBUG( "Modem: Response: " + response );
+}
+
 void Modem::registerNumber( const String& number )
 {
     // FIXME: Stub.
@@ -156,6 +175,7 @@ void Modem::dial( const String& number )
     String command( commandStream.str() );
     LOG_DEBUG( "Modem: Send " + command );
     m_lineDriver.flushInput();
+    m_lineDriver.flushOutput(); // Flush output here to prevent AT commands ending up in the data stream.
     m_lineDriver.write( command.c_str(), command.length() );
 
     LOG_DEBUG( "Modem: Wait for response" );
@@ -177,6 +197,7 @@ void Modem::answer()
 
 void Modem::hangup()
 {
+    m_lineStatus.m_secure = false;
     m_lineDriver.dataTerminalReady( false ); // Force disconnect and back into command mode.
 }
 
@@ -191,7 +212,6 @@ struct Line::LineStatus Modem::getLineStatus()
     if( !m_lineStatus.m_carrier )
     {
         m_lineStatus.m_secure = false;
-        m_lineDriver.dataTerminalReady( false ); // Hold in command mode (prevents WiFi modem websockets auto reconnect).
 
         // In command mode, so we can periodically poll the line status.
         // (E.g. for WiFi, whether we're connected to an AP.)
