@@ -123,6 +123,8 @@ void ANSIEditor::enter( const Value& parameters )
         drawSelectAsset();
         m_state = selectAsset;
     }
+
+    m_inputDevice.setPeekEnabled( false ); // Capture all keystrokes
 }
 
 void ANSIEditor::returnTo( const Value& parameters )
@@ -153,6 +155,8 @@ bool ANSIEditor::returning( String& nextStrategy, Value& parameters )
             parameters[_mode] = _insert;
             parameters[_assetName] = m_assetName;
         }
+
+        m_inputDevice.setPeekEnabled( true );
         
         return true;
     }

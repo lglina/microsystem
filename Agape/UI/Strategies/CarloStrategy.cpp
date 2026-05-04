@@ -121,6 +121,8 @@ void Carlo::enter( const Value& parameters )
     {
         m_formTerminal = terminalWindow.m_terminal;
     }
+
+    m_inputDevice.setPeekEnabled( false ); // Capture all keystrokes
 }
 
 void Carlo::returnTo( const Value& parameters )
@@ -139,6 +141,7 @@ bool Carlo::returning( String& nextStrategy, Value& parameters )
         closeForm();
         m_hotkeys.clear();
         m_compositor.lockScene( false );
+        m_inputDevice.setPeekEnabled( true );
         return true;
     }
 

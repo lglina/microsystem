@@ -163,6 +163,8 @@ void EditWorld::enter( const Value& parameters )
         m_state = none;
         m_completed = true;
     }
+
+    m_inputDevice.setPeekEnabled( false ); // Capture all keystrokes
 }
 
 void EditWorld::returnTo( const Value& parameters )
@@ -180,6 +182,7 @@ bool EditWorld::returning( String& nextStrategy, Value& parameters )
     {
         closeForm();
         m_hotkeys.clear();
+        m_inputDevice.setPeekEnabled( true );
         return true;
     }
 

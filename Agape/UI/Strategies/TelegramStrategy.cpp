@@ -157,6 +157,8 @@ void Telegram::enter( const Value& parameters )
     {
         m_completed = true; // Uh oh!
     }
+
+    m_inputDevice.setPeekEnabled( false ); // Capture all keystrokes
 }
 
 void Telegram::returnTo( const Value& parameters )
@@ -176,6 +178,7 @@ bool Telegram::returning( String& nextStrategy, Value& parameters )
         m_windowManager.setTerminalWindowVisible( m_windowName, false );
         delete( m_telegramLoader );
         m_telegramLoader = nullptr;
+        m_inputDevice.setPeekEnabled( true );
         return true;
     }
 
