@@ -56,8 +56,8 @@ bool Arithmetic::eval( Value& value, ExecutionContext& executionContext )
     LOG_DEBUG( stream.str() );
 #endif
 
-    int lhsInt( 0 );
-    int rhsInt( 0 );
+    long long lhsInt( 0 );
+    long long rhsInt( 0 );
     switch( m_operation )
     {
     case addition:
@@ -87,7 +87,7 @@ bool Arithmetic::eval( Value& value, ExecutionContext& executionContext )
     case modulo:
         lhsInt = std::round( lhs );
         rhsInt = std::round( rhs );
-        value = ( lhsInt % rhsInt );
+        value = double( lhsInt % rhsInt );
         return true;
         break;
     default:
