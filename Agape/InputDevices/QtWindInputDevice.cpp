@@ -131,7 +131,7 @@ bool QtWind::eof() const
 
 char QtWind::peek()
 {
-    if( !m_buffer.empty() )
+    if( m_peekEnabled && !m_buffer.empty() )
     {
         return m_buffer.front();
     }

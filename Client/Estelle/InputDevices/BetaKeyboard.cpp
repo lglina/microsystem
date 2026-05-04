@@ -91,7 +91,7 @@ bool BetaKeyboard::eof() const
 char BetaKeyboard::peek()
 {
     char c( '\0' );
-    if( !m_buffer.isEmpty() )
+    if( m_peekEnabled && !m_buffer.isEmpty() )
     {
         c = m_buffer.front();
     }
