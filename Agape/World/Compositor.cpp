@@ -2154,9 +2154,9 @@ void Compositor::_drawTextItem( const SceneItem& sceneItem, const String& text, 
     while( rowsRemain > 0 )
     {
         int rowsPrinted( 0 );
-        if( line[line.size()-1] == '\r' ) line.pop_back();
         if( !line.empty() )
         {
+            if( line[line.size()-1] == '\r' ) line.pop_back();
             rowsPrinted = m_terminal.printFormatted( line,
                                                      currentRow,
                                                      sceneItem.col() + textBorder,
