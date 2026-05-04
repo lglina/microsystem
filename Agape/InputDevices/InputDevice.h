@@ -19,10 +19,17 @@ class InputDevice : public Runnable
 #endif // QT_CORE_LIB
 
 public:
+    InputDevice();
+
     // FIXME: Need to make this more like ReadableWritable?
     virtual bool eof() const = 0;
     virtual char peek() = 0;
+    bool peekEnabled();
+    void setPeekEnabled( bool enabled );
     virtual char get() = 0;
+
+protected:
+    bool m_peekEnabled;
 };
 
 namespace InputDevices
