@@ -62,6 +62,7 @@ void EventTimer::run()
 
     if( ( m_lastS != 0 ) &&
         ( ( currentMs - m_lastMs ) >= tickPeriod ) &&
+        ( currentMs < clockPeriod ) &&
         ( ( currentMs - m_lastMs ) <= ( clockPeriod - ( tickPeriod / 2 ) ) ) )
     {
         m_lastMs += tickPeriod;
