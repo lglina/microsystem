@@ -112,7 +112,7 @@ void PlatformUI::receiveEvent( const Platform::Event& event )
 
 void PlatformUI::run()
 {
-    if( !m_inputDevice.eof() )
+    while( m_inputDevice.peekEnabled() && !m_inputDevice.eof() )
     {
         char c( m_inputDevice.peek() );
         bool consumed( false );
@@ -120,6 +120,9 @@ void PlatformUI::run()
         // This is called by the main client loop so any keys defined here can
         // be used anywhere in the application. We only consume keys that we
         // recognise so all others can be passed on to the active UI strategy.
+        // If the active UI strategy wants to use these keys it will disable
+        // peeking, we then won't consume these keystrokes here and the
+        // strategy can see and consume them.
         if( c == control( Key::up ) )
         {
             m_platform.screenBrightnessUp();
@@ -144,6 +147,11 @@ void PlatformUI::run()
         if( consumed )
         {
             m_inputDevice.get();
+            // And loop again to see if there are any more keystrokes for us.
+        }
+        else
+        {
+            break;
         }
     }
 
