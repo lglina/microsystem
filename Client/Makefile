@@ -77,7 +77,9 @@ SOURCES=Actors/Linda2Actor.cpp \
 		GraphicsDrivers/RA8873.cpp \
 		Highlighters/Factories/CarloHighlighterFactory.cpp \
 		Highlighters/CarloHighlighter.cpp \
+		InputDevices/InputDevice.cpp \
 		InputDevices/SPIKeyboard.cpp \
+		LineDrivers/LineDriver.cpp \
 		LineDrivers/NullLineDriver.cpp \
 		LineDrivers/PICSerialLineDriver.cpp \
 		Lines/DummyModemLine.cpp \
