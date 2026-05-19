@@ -22,24 +22,30 @@ class LineDriver : public ReadableWritable, public Runnable
 {
 #endif // QT_CORE_LIB
 public:
-    virtual ~LineDriver() {};
+    virtual ~LineDriver();
 
     virtual int open() = 0;
-    virtual void reset() {};
+    virtual void reset();
 
-    virtual bool isSecure() { return false; };
+    virtual bool isSecure();
 
     virtual int read( char* data, int len ) = 0;
     virtual int write( const char* data, int len ) = 0;
-    virtual bool error() { return false; } // TODO: Return errors?
+    virtual bool error();
 
-    virtual void setLinkAddress( const String& number ) {};
-    virtual bool linkReady() { return false; };
+    virtual void setLinkAddress( const String& number );
+    virtual bool linkReady();
 
-    virtual bool dataCarrierDetect() { return false; };
-    virtual void dataTerminalReady( bool ready ) {};
+    virtual void enableFlowControl( bool enable );
+    virtual int controlLines();
+    virtual void setControlLines( int mask );
+    virtual void clearControlLines( int mask );
 
-    virtual void run() {};
+    // Convenience functions.
+    bool dataCarrierDetect();
+    void dataTerminalReady( bool ready );
+
+    virtual void run();
 };
 
 } // namespace Agape
