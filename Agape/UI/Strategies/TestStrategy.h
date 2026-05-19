@@ -22,6 +22,7 @@ class Factory;
 
 class EntropySource;
 class InputDevice;
+class Line;
 class Memory;
 class Platform;
 class ReadableWritable;
@@ -46,6 +47,7 @@ public:
           Agape::Memory& memory,
           MIDIPlayer& midiPlayer,
           EntropySource& entropySource,
+          Line& line,
           Timers::Factory& timerFactory,
           ReadableWritable* rawDebug = nullptr );
 
@@ -74,11 +76,17 @@ private:
 
     void setState();
 
+    void drawButton( int row, int col, bool on, const String& label );
+
+    void initModemTest();
+    void drawModemState();
+
     InputDevice& m_inputDevice;
     Platform& m_platform;
     Agape::Memory& m_memory;
     MIDIPlayer& m_midiPlayer;
     EntropySource& m_entropySource;
+    Line& m_line;
 
     ReadableWritable* m_rawDebug;
 
@@ -87,6 +95,8 @@ private:
     Timer* m_timer;
 
     enum State m_state;
+
+    int m_modemCtr;
 
     Vector<int> m_histogram;
     int m_histStart;

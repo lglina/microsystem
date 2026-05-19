@@ -3,6 +3,7 @@
 #include "Audio/MIDIPlayer.h"
 #include "EntropySources/EntropySource.h"
 #include "InputDevices/InputDevice.h"
+#include "Lines/Line.h"
 #include "Memories/Memory.h"
 #include "Platforms/Platform.h"
 #include "Timers/Factories/TimerFactory.h"
@@ -40,6 +41,7 @@ Test::Test( WindowManager& windowManager,
             Agape::Memory& memory,
             MIDIPlayer& midiPlayer,
             EntropySource& entropySource,
+            Line& line,
             Timers::Factory& timerFactory,
             ReadableWritable* rawDebug ) :
   m_inputDevice( inputDevice ),
@@ -47,10 +49,12 @@ Test::Test( WindowManager& windowManager,
   m_memory( memory ),
   m_midiPlayer( midiPlayer ),
   m_entropySource( entropySource ),
+  m_line( line ),
   m_rawDebug( rawDebug ),
   m_terminal( nullptr ),
   m_timer( timerFactory.makeTimer() ),
   m_state( TestScreen ),
+  m_modemCtr( 0 ),
   m_histStart( 0 )
 {
     WindowManager::TerminalWindow terminalWindow;
@@ -213,6 +217,42 @@ void Test::run()
             m_timer->reset();
         }
         break;
+    case TestModem:
+        if( m_timer->ms() >= 100 )
+        {
+            ++m_modemCtr;
+            if( m_modemCtr == 10 )
+            {
+                drawButton( 2, 2, false, "TX" );
+                drawButton( 2, 12, false, "RX" );
+
+                m_line.setControlLines( Line::DTR );
+            }
+            else if( m_modemCtr == 20 )
+            {
+                m_line.clearControlLines( Line::DTR );
+                m_line.setControlLines( Line::RTS );
+            }
+            else if( m_modemCtr == 30 )
+            {
+                m_line.clearControlLines( Line::RTS );
+
+                String command( "AT\r\n" );
+                m_line.write( command.c_str(), command.length() );
+                drawButton( 2, 2, true, "TX" );
+
+                String line;
+                m_line.readLine( line, 2 ); // 2s timeout
+                drawButton( 2, 12, !line.empty(), "RX" );
+
+                m_modemCtr = 0;
+            }
+
+            drawModemState();
+
+            m_timer->reset();
+        }
+        break;
     case TestRNG:
         /*
         if( m_rawDebug )
@@ -330,12 +370,14 @@ void Test::setState()
     case TestModem:
         m_terminal->clearScreen();
         m_terminal->consumeString( "Modem test\r\n" );
-        // TODO
+        initModemTest();
+        drawModemState();
+        m_timer->reset();
+        m_modemCtr = 0;
         break;
     case TestSound:
         m_terminal->clearScreen();
         m_terminal->consumeString( "Sound test\r\nP to play\r\nS to stop\r\n" );
-        // TODO
         break;
     case TestRNG:
         m_terminal->clearScreen();
@@ -349,6 +391,43 @@ void Test::setState()
     default:
         break;
     }
+}
+
+void Test::drawButton( int row, int col, bool on, const String& label )
+{
+    m_terminal->consumeNext( row,
+                             col,
+                             Terminal::attributes( Terminal::colBlue,
+                                                   Terminal::colGrey ) );
+    m_terminal->consumeString( String( 8, ' ' ) );
+    m_terminal->consumeNext( row,
+                             col + ( ( 8 - label.size() ) / 2 ),
+                             Terminal::attributes( Terminal::colBlue,
+                                                   on ? Terminal::colWhite : Terminal::colBlack ) );
+    m_terminal->consumeString( label );
+    m_terminal->consumeNext( 0, 0, Terminal::colGrey );
+}
+
+void Test::initModemTest()
+{
+    m_line.enableLoopTest( true );
+    m_line.enableFlowControl( false ); // Disable flow control so we can manually set RTS.
+    m_line.clearControlLines( Line::DTR );
+    m_line.clearControlLines( Line::RTS );
+
+    drawButton( 2, 2, false, "TX" );
+    drawButton( 2, 12, false, "RX" );
+    drawModemState();
+}
+
+void Test::drawModemState()
+{
+    int controlLines( m_line.controlLines() );
+
+    drawButton( 4, 2, ( controlLines & Line::DTR ) == Line::DTR, "/DTR" );
+    drawButton( 4, 12, ( controlLines & Line::DCD ) == Line::DCD, "/DCD" );
+    drawButton( 6, 2, ( controlLines & Line::RTS ) == Line::RTS, "/RTS" );
+    drawButton( 6, 12, ( controlLines & Line::CTS ) == Line::CTS, "/CTS" );
 }
 
 } // namespace Strategies
