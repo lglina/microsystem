@@ -23,8 +23,10 @@ public:
     virtual void flushInput();
     virtual void flushOutput();
 
-    virtual bool dataCarrierDetect();
-    virtual void dataTerminalReady( bool ready );
+    virtual void enableFlowControl( bool enable );
+    virtual int controlLines();
+    virtual void setControlLines( int mask );
+    virtual void clearControlLines( int mask );
 
 private:
     Agape::PICSerial& m_picSerial;

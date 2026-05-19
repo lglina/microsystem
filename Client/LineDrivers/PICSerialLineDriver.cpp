@@ -1,4 +1,5 @@
 #include "LineDrivers/PICSerialLineDriver.h"
+#include "Lines/Line.h"
 #include "Loggers/Logger.h"
 #include "PICSerialLineDriver.h"
 #include "PICSerial.h"
@@ -57,23 +58,53 @@ void PICSerial::flushOutput()
     m_picSerial.flushOutput();
 }
 
-bool PICSerial::dataCarrierDetect()
+void PICSerial::enableFlowControl( bool enable )
 {
-    // FIXME: Should DCD and DTR functions be moved into PICSerial.c?
-    // Unlike RTS/CTS flow control they're not part of the PIC UART peripheral,
-    // so perhaps here really is the best place for them.
-    return !PORTCbits.RC13;
-}
+    m_picSerial.enableFlowControl( enable );
 
-void PICSerial::dataTerminalReady( bool ready )
-{
-    if( ready )
+    if( enable )
     {
-        PORTCCLR = _PORTC_RC14_MASK;
+        RPB6Rbits.RPB6R = 0x01; // Map /U1RTS
     }
     else
     {
-        PORTCSET = _PORTC_RC14_MASK;
+        RPB6Rbits.RPB6R = 0x00; // Unmap /U1RTS
+    }
+}
+
+int PICSerial::controlLines()
+{
+    int controlLines( 0 );
+    if( !LATCbits.LATC14 ) controlLines |= Line::DTR;
+    if( !PORTCbits.RC13 ) controlLines |= Line::DCD;
+    if( !LATBbits.LATB6 ) controlLines |= Line::RTS;
+    if( !PORTDbits.RD9 ) controlLines |= Line::CTS;
+    return controlLines;
+}
+
+void PICSerial::setControlLines( int mask )
+{
+    if( mask & Line::DTR )
+    {
+        LATCCLR = _LATC_LATC14_MASK;
+    }
+
+    if( mask & Line::RTS )
+    {
+        LATBCLR = _LATB_LATB6_MASK; // Presumes /RTS controlled by port, not UART peripheral.
+    }
+}
+
+void PICSerial::clearControlLines( int mask )
+{
+    if( mask & Line::DTR )
+    {
+        LATCSET = _LATC_LATC14_MASK;
+    }
+
+    if( mask & Line::RTS )
+    {
+        LATBSET = _LATB_LATB6_MASK; // Presumes /RTS controlled by port, not UART peripheral.
     }
 }
 
