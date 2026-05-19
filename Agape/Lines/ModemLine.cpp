@@ -243,6 +243,25 @@ struct Line::LineStatus Modem::getLineStatus()
     return m_lineStatus;
 }
 
+void Modem::enableLoopTest( bool enable )
+{
+    String command;
+    if( enable )
+    {
+        command = "AT+TLOOP=1\r\n";
+    }
+    else
+    {
+        command = "AT+TLOOP=0\r\n";
+    }
+
+    m_lineDriver.flushInput();
+    m_lineDriver.write( command.c_str(), command.length() );
+
+    String response;
+    readLine( response ); // OK
+}
+
 } // namespace Lines
 
 } // namespace Agape

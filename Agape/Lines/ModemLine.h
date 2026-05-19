@@ -35,6 +35,8 @@ public:
 
     virtual struct Line::LineStatus getLineStatus();
 
+    virtual void enableLoopTest( bool enable );
+
 private:
     bool m_isOpen;
 };
