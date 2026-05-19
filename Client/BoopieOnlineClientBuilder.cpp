@@ -327,6 +327,7 @@ void BoopieOnline::buildSplash()
                                                *m_flash,
                                                *m_midiPlayer,
                                                *m_keyEntropySource,
+                                               *m_line,
                                                *m_timerFactory,
                                                &m_debugSerial );
 }
