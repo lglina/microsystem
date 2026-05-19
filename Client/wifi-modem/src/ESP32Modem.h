@@ -55,6 +55,7 @@ private:
     void connectWiFi();
     void disconnectWiFi();
     void dial( const String& command );
+    void setLoopback( const String& command );
     
     bool connectWebSockets( const String& address, int port );
 
@@ -91,6 +92,8 @@ private:
     String m_addAccessPointIdentity;
 
     bool m_scanPending;
+
+    bool m_loopback;
 };
 
 } // namespace Modems

@@ -55,7 +55,8 @@ ESP32Modem::ESP32Modem() :
   m_carrier( false ),
   m_wsDidDisconnect( false ),
   m_numAccessPoints( 0 ),
-  m_scanPending( false )
+  m_scanPending( false ),
+  m_loopback( false )
 {
     s_instance = this;
 
@@ -84,7 +85,7 @@ ESP32Modem::ESP32Modem() :
 
     Serial1.setTimeout(10);
 
-    Serial.println( "Micro System WiFi Modem v1.0" );
+    Serial.println( "Micro System WiFi Modem v1.01" );
     Serial.println( "(C) Lauren Glina 2023-2026" );
 
     WiFi.mode( WIFI_STA );
@@ -136,13 +137,27 @@ void ESP32Modem::handleATCommand()
     {
         disconnectWiFi();
     }
+    else if( command.startsWith( "AT+TLOOP=" ) )
+    {
+        setLoopback( command );
+    }
     else if( command.startsWith( "ATD" ) )
     {
         dial( command );
     }
+    else if( command == "AT\r" )
+    {
+        Serial1.println( "OK" );
+    }
     else if( !command.isEmpty() )
     {
         Serial1.println( "ERROR" );
+    }
+
+    if( m_loopback )
+    {
+        digitalWrite( 4, digitalRead( 5 ) ); // /RTS -> /CTS
+        digitalWrite( 0, digitalRead( 1 ) ); // /DTR -> /DCD
     }
 }
 
@@ -461,6 +476,31 @@ void ESP32Modem::dial( const String& command )
     
     Serial.println( "Websockets connect error" );
     Serial1.println( "ERROR" );
+}
+
+void ESP32Modem::setLoopback( const String& command )
+{
+    ArduinoTokeniser setTokeniser( command, '=' );
+    String commandBase = setTokeniser.token();
+    String value = setTokeniser.token();
+    if( value.startsWith( "1" ) )
+    {
+        Serial.println( "Enabling loopback test mode" );
+        Serial1.setHwFlowCtrlMode( UART_HW_FLOWCTRL_DISABLE );
+        pinMode( 0, OUTPUT );       //  /DCD
+        pinMode( 1, INPUT_PULLUP ); //  /DTR
+        pinMode( 5, INPUT_PULLUP ); //  /RTS
+        pinMode( 4, OUTPUT );       //  /CTS
+        m_loopback = true;
+    }
+    else
+    {
+        Serial.println( "Disabling loopback test mode" );
+        Serial1.setHwFlowCtrlMode( UART_HW_FLOWCTRL_CTS_RTS );
+        m_loopback = false;
+    }
+
+    Serial1.println( "OK" );
 }
 
 bool ESP32Modem::connectWebSockets( const String& address, int port )
