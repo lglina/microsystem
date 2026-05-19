@@ -51,6 +51,7 @@ SOURCES += ../Agape/AssetLoaders/Caches/KiamaFSAssetCache.cpp \
            ../Agape/GraphicsDrivers/QtWindGraphicsDriver.cpp \
            ../Agape/InputDevices/InputDevice.cpp \
            ../Agape/InputDevices/QtWindInputDevice.cpp \
+           ../Agape/LineDrivers/LineDriver.cpp \
            ../Agape/LineDrivers/NullLineDriver.cpp \
            ../Agape/LineDrivers/QtWebSocketsLineDriver.cpp \
            ../Agape/Lines/DummyModemLine.cpp \
