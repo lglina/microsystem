@@ -313,6 +313,30 @@ bool PICSerial::eof() const
     return m_receiveBuffer.isEmpty();
 }
 
+void PICSerial::enableFlowControl( bool enable )
+{
+    if( enable )
+    {
+        if( m_port == 1 ) U1MODEbits.UEN = 0x02;
+        else if( m_port == 2 ) U2MODEbits.UEN = 0x02;
+        else if( m_port == 3 ) U3MODEbits.UEN = 0x02;
+#if defined(__PIC32MZ__) || defined(__PIC32MX__)
+        else if( m_port == 4 ) U4MODEbits.UEN = 0x02;
+        else if( m_port == 5 ) U5MODEbits.UEN = 0x02;
+#endif
+    }
+    else
+    {
+        if( m_port == 1 ) U1MODEbits.UEN = 0x00;
+        else if( m_port == 2 ) U2MODEbits.UEN = 0x00;
+        else if( m_port == 3 ) U3MODEbits.UEN = 0x00;
+#if defined(__PIC32MZ__) || defined(__PIC32MX__)
+        else if( m_port == 4 ) U4MODEbits.UEN = 0x00;
+        else if( m_port == 5 ) U5MODEbits.UEN = 0x00;
+#endif
+    }
+}
+
 void PICSerial::handleInterrupt( enum InterruptDispatcher::InterruptVector vector )
 {
 #if defined(__PIC32MZ__)

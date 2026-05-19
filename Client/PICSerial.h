@@ -32,6 +32,8 @@ public:
 
     bool eof() const;
 
+    void enableFlowControl( bool enable );
+
     virtual void handleInterrupt( enum InterruptDispatcher::InterruptVector vector );
 
 private:
