@@ -21,6 +21,18 @@ public:
         select
     };
 
+    enum ControlLines
+    {
+        DTR = 1,
+        DCD = 2,
+        DSR = 4,
+        RI = 8,
+        RTS = 16,
+        RTR = 32,
+        CTS = 64,
+        FLIGHT = 128
+    };
+
     struct ConfigOption
     {
         ConfigOption() :
@@ -69,7 +81,7 @@ public:
     };
 
     Line( LineDriver& lineDriver );
-    virtual ~Line() {};
+    virtual ~Line();
 
     virtual void open();
     virtual void run();
@@ -92,6 +104,14 @@ public:
 
     void setRequiresAuthentication( bool requiresAuthentication );
     bool requiresAuthentication() const;
+
+    // Defaults pass through to LineDriver.
+    virtual void enableFlowControl( bool enable );
+    virtual int controlLines();
+    virtual void setControlLines( int mask );
+    virtual void clearControlLines( int mask );
+
+    virtual void enableLoopTest( bool enable );
 
 protected:
     LineDriver& m_lineDriver;

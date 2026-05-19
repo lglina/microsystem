@@ -10,6 +10,11 @@ Line::Line( LineDriver& lineDriver ) :
 {
 }
 
+Line::~Line()
+{
+    // NOP
+}
+
 void Line::open()
 {
     m_lineDriver.open();
@@ -43,6 +48,31 @@ void Line::setRequiresAuthentication( bool requiresAuthentication )
 bool Line::requiresAuthentication() const
 {
     return m_requiresAuthentication;
+}
+
+void Line::enableFlowControl( bool enable )
+{
+    m_lineDriver.enableFlowControl( enable );
+}
+
+int Line::controlLines()
+{
+    return m_lineDriver.controlLines();
+}
+
+void Line::setControlLines( int mask )
+{
+    m_lineDriver.setControlLines( mask );
+}
+
+void Line::clearControlLines( int mask )
+{
+    m_lineDriver.clearControlLines( mask );
+}
+
+void Line::enableLoopTest( bool enable )
+{
+    // NOP
 }
 
 } // namespace Agape
