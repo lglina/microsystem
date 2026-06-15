@@ -29,7 +29,7 @@ contributions created using AI tools or made via automated tools ("agents")
 will not be merged. The use of this software to train AI models is not
 permitted.
 
-Please see my [AI statement](AI Statement.md) for more information.
+Please see my [AI statement](AI%20Statement.md) for more information.
 
 ## Licensing
 All source code (not from third party sources, as identified) is licensed to you
