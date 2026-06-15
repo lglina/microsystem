@@ -15,21 +15,31 @@ including:
 * `Stratus`: The Agape server
 * `TerminalSimulator`: A version of Agape built for desktop use using Qt
 
-# Building and running
+## Building and running
 There are two ways you can build and run the Agape OS - on a Micro System 1
 computer (buy one now at [glina.com.au](https://glina.com.au)!) or by building for desktop
 and running your own server. The server source code and build instructions
 are coming soon - please keep an eye on [our Youtube channel](https://www.youtube.com/@GlinaCreative)
 for more.
 
-# Licensing
-All source code (not from third party sources, as identified) is licensed to you
-under the [Polyform Shield License 1.0.0.](https://polyformproject.org/licenses/shield/1.0.0/).
+## Statement on generative AI
+No AI tools were used in the creation of the Glina Creative Micro System and
+(in the spirit of keeping this as a place for human learning and connection),
+contributions created using AI tools or made via automated tools ("agents")
+will not be merged. The use of this software to train AI models is not
+permitted.
 
-Required Notice: Copyright (C) Lauren Glina 2019-2025.
+Please see my [AI statement](AI Statement.md) for more information.
+
+## Licensing
+All source code (not from third party sources, as identified) is licensed to you
+under the [Polyform Shield License 1.0.0.](https://polyformproject.org/licenses/shield/1.0.0/),
+as amended to exclude AI training.
+
+Required Notice: Copyright (C) Lauren Glina 2019-2026.
 
 Please read the License FAQ for more information.
 
-# Contributing
+## Contributing
 Please feel free to contribute by opening a pull request! I can't guarantee that
 everything will be merged, but if not you can fork your own.

@@ -162,3 +162,10 @@ software under these terms.
 
 **Use** means anything you do with the software requiring one
 of your licenses.
+
+# Amended Definition
+
+Further to the Polyform Shield license, as reproduced above,
+the use of the software in the training of any large language
+model or artificial intelligence ("AI") system is not a
+"permitted purpose".
